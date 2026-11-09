@@ -1,0 +1,47 @@
+{
+  "name": "inkdoze",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Browser-only converter that turns images into sleep screens for e-readers.",
+  "license": "Apache-2.0",
+  "homepage": "https://0then0.github.io/inkdoze/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0then0/inkdoze.git"
+  },
+  "bugs": {
+    "url": "https://github.com/0then0/inkdoze/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "typecheck": "node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.json && node node_modules/@typescript/native/bin/tsc --noEmit -p tsconfig.node.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "catalog:check": "node --experimental-strip-types scripts/check-catalog.ts",
+    "check": "npm run catalog:check && npm run typecheck && npm run lint && npm run test && npm run build"
+  },
+  "dependencies": {
+    "preact": "^11.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^24.19.2",
+    "@typescript/native": "npm:typescript@^7.0.2",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
+  }
+}

@@ -1,0 +1,37 @@
+name: Add or correct an e-reader
+description: New model, wrong resolution, or a sleep screen install method.
+labels: [catalog]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please read the catalog section of [CONTRIBUTING.md](https://github.com/0then0/inkdoze/blob/main/CONTRIBUTING.md). A matching screen size or name does not prove a matching resolution or install method, so every claim needs a source.
+  - type: input
+    id: model
+    attributes:
+      label: Brand, model and generation
+      placeholder: Kobo Clara Colour (2024), model N367
+    validations:
+      required: true
+  - type: input
+    id: resolution
+    attributes:
+      label: Native resolution (portrait)
+      placeholder: 1072 × 1448
+  - type: textarea
+    id: resolution-sources
+    attributes:
+      label: Resolution sources
+      description: Manufacturer spec, firmware source (tag or commit), or a device screenshot. Note regional variants.
+    validations:
+      required: true
+  - type: textarea
+    id: install
+    attributes:
+      label: Sleep screen install method
+      description: Firmware and version, menu path, folder or file name, formats, limitations.
+  - type: textarea
+    id: install-sources
+    attributes:
+      label: Install method sources
+      description: Official documentation or firmware source preferred. Mark community guides as such.
