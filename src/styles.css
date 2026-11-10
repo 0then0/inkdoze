@@ -651,6 +651,24 @@ input[type='color'] {
   position: relative;
 }
 
+.more-brands {
+  width: 100%;
+  font-size: 0.8rem;
+}
+
+.more-brands summary {
+  cursor: pointer;
+  color: var(--accent);
+  padding: 2px 0;
+}
+
+.chips-more {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 .chip input {
   position: absolute;
   opacity: 0;
@@ -691,19 +709,6 @@ input[type='color'] {
   .device-list {
     max-height: 50vh;
   }
-}
-
-.device-group h3 {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: 5px 10px;
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  background: var(--panel-2);
-  border-bottom: 1px solid var(--line);
 }
 
 .device-option {
@@ -1358,4 +1363,42 @@ input[type='color'] {
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ------------------------------------------------------------------ automatic mode */
+.auto-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--ok-soft);
+  cursor: pointer;
+}
+
+.auto-card input {
+  width: 20px;
+  height: 20px;
+  margin: 1px 0 0;
+  accent-color: var(--ok);
+}
+
+.auto-card strong {
+  display: block;
+  font-size: 0.92rem;
+}
+
+.manual summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 4px 0;
+}
+
+.manual-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
 }

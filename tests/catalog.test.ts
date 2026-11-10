@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEVICES, INSTALL_METHODS, deviceStatus, getDevice, searchDevices } from '../src/catalog/index.ts';
+import { BRANDS_BY_POPULARITY, DEVICES, INSTALL_METHODS, deviceStatus, getDevice, popularity, searchDevices } from '../src/catalog/index.ts';
 import type { Device, InstallMethod } from '../src/catalog/types.ts';
 import { validateCatalog } from '../src/catalog/validate.ts';
 import { isMessageKey } from '../src/i18n/index.ts';
@@ -46,6 +46,12 @@ describe('catalog data', () => {
       expect(d, id).toBeDefined();
       expect([d!.resolution.width, d!.resolution.height], id).toEqual([w, h]);
     }
+  });
+
+  it('covers the whole BOOX Volta line', () => {
+    const volta = DEVICES.filter((d) => d.id.startsWith('boox-volta'));
+    expect(volta.map((d) => d.model)).toEqual(['Volta', 'Volta 2', 'Volta 3', 'Volta 4', 'Volta 5', 'Volta 6']);
+    for (const d of volta) expect(d.resolution).toEqual({ width: 758, height: 1024 });
   });
 
   it('records generations with different resolutions separately', () => {
@@ -141,6 +147,17 @@ describe('device search', () => {
     expect(ids('kobo n428')).toEqual(['kobo-libra-colour']);
   });
 
+  it('matches numbers as whole words', () => {
+    expect(ids('kindle 11')).toEqual(['kindle-11']);
+    expect(ids('1264').length).toBeGreaterThan(5);
+    expect(ids('paperwhite 2021')).toEqual(['kindle-paperwhite-5']);
+  });
+
+  it('finds by non-Latin aliases', () => {
+    expect(ids('вольта 5')).toEqual(['boox-volta-5']);
+    expect(ids('вольта').sort()).toEqual(['boox-volta', 'boox-volta-2', 'boox-volta-3', 'boox-volta-4', 'boox-volta-5', 'boox-volta-6']);
+  });
+
   it('finds by resolution in either orientation', () => {
     expect(ids('1264x1680')).toEqual(ids('1680×1264'));
     expect(ids('1264x1680').length).toBeGreaterThan(5);
@@ -150,5 +167,55 @@ describe('device search', () => {
     const colorKobo = searchDevices({ brands: ['Kobo'], color: 'color' }).map((d) => d.id);
     expect(colorKobo.sort()).toEqual(['kobo-clara-colour', 'kobo-libra-colour']);
     expect(searchDevices({ brands: ['Xteink'], color: 'color' })).toEqual([]);
+  });
+});
+
+describe('popularity order', () => {
+  const rank = (id: string) => searchDevices({}).findIndex((d) => d.id === id);
+
+  it('puts mainstream current models first', () => {
+    const top = searchDevices({}).slice(0, 12).map((d) => d.brand);
+    expect(top[0]).toBe('Kindle');
+    expect(top).toContain('Kobo');
+  });
+
+  it('orders flagships above niche and long-discontinued models', () => {
+    expect(rank('kindle-paperwhite-6')).toBeLessThan(rank('kobo-clara-bw'));
+    expect(rank('kobo-clara-bw')).toBeLessThan(rank('boox-e43'));
+    expect(rank('kindle-paperwhite-3')).toBeLessThan(rank('hanlin-a9'));
+    expect(rank('remarkable-2')).toBeLessThan(rank('sony-dpt-rp1'));
+    expect(rank('sony-prs-t3')).toBeLessThan(rank('nuut-1'));
+  });
+
+  it('keeps the order inside filtered results', () => {
+    const kobo = searchDevices({ brands: ['Kobo'] });
+    for (let i = 1; i < kobo.length; i++) expect(popularity(kobo[i - 1]!)).toBeGreaterThanOrEqual(popularity(kobo[i]!));
+  });
+
+  it('counts recency from the year it is given and caps it', () => {
+    const pw6 = getDevice('kindle-paperwhite-6')!;
+    expect(popularity(pw6, 2024)).toBe(popularity(pw6, 2020));
+    expect(popularity(pw6, 2030)).toBeLessThan(popularity(pw6, 2026));
+    expect(popularity(pw6, 2050)).toBe(popularity(getDevice('kindle-paperwhite-5')!, 2050));
+  });
+
+  it('keeps flagships above obscure models in later years', () => {
+    for (const year of [2026, 2030, 2040]) {
+      expect(popularity(getDevice('kindle-paperwhite-6')!, year)).toBeGreaterThan(popularity(getDevice('hanlin-a9')!, year));
+      expect(popularity(getDevice('kobo-clara-bw')!, year)).toBeGreaterThan(popularity(getDevice('boox-a62s-watson')!, year));
+    }
+  });
+
+  it('includes every reader listed on onyx-boox.ru', () => {
+    const ids = new Set(DEVICES.map((d) => d.id));
+    for (const id of ['boox-darwin-11', 'boox-faust-7', 'boox-kon-tiki-5', 'boox-monte-cristo-5', 'boox-i62m-nemo', 'boox-a62-poirot', 'boox-max-lumi', 'boox-raphael-2']) {
+      expect(ids.has(id), id).toBe(true);
+    }
+    expect(searchDevices({ query: 'дарвин 11' }).map((d) => d.id)).toEqual(['boox-darwin-11']);
+  });
+
+  it('lists every brand in the brand filter, most popular first', () => {
+    expect(BRANDS_BY_POPULARITY[0]).toBe('Kindle');
+    expect(new Set(BRANDS_BY_POPULARITY)).toEqual(new Set(DEVICES.map((d) => d.brand)));
   });
 });

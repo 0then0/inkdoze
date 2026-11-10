@@ -78,7 +78,7 @@ export function validateCatalog(
     if (!(BRANDS as readonly string[]).includes(d.brand)) add(id, `unknown brand ${d.brand}`);
     if (!d.model.trim()) add(id, 'missing model');
     if (!d.generation.trim()) add(id, 'missing generation');
-    if (!Number.isInteger(d.year) || d.year < 2007 || d.year > Number(today.slice(0, 4)) + 1) add(id, `implausible year ${d.year}`);
+    if (!Number.isInteger(d.year) || d.year < 1998 || d.year > Number(today.slice(0, 4)) + 1) add(id, `implausible year ${d.year}`);
 
     const nameKey = `${d.brand}|${d.model}|${d.generation}`.toLowerCase();
     const existing = names.get(nameKey);

@@ -7,8 +7,10 @@ All notable changes to this project are documented here. The format follows [Kee
 ### Added
 
 - Browser-only converter for e-reader sleep screens: drag and drop or file picker for PNG, JPEG and WebP; per-file errors; limits on file count, file size and decoded pixels.
-- Catalog of 113 e-readers across Kindle, Kobo, BOOX, PocketBook, Xteink, tolino, NOOK, Bigme, Meebook, Supernote, reMarkable, DuRoBo and Viwoods, with search, brand and colour filters, custom size and sourced install methods.
+- Catalog of 367 e-readers from 35 brands, including every ONYX BOOX model listed on onyx-boox.ru and discontinued models back to 2004, with search, brand and colour filters, custom size and sourced install methods. The device list is ordered by approximate popularity.
+- Screen Saver Hack install method for Kindles with firmware 2.x–4.x.
 - Fit, Fill and Stretch framing, aspect-locked crop, zoom, offset, rotation and background colour.
+- Automatic e-ink adjustment, on by default: per-image contrast stretch and midtone curve, colour or grayscale chosen from the e-reader, manual settings folded away. The last selected e-reader is remembered.
 - Grayscale or colour, brightness, contrast, invert, 256/16/4/2 gray levels with Floyd–Steinberg or Atkinson dithering.
 - PNG, JPEG and BMP (24, 8, 4, 2, 1 bit) export; ZIP download for batches; editable file names; per-file settings.
 - PXC encoder for CrossPoint's 2-bit layout, not exposed until a CrossPoint release reads PXC sleep images.

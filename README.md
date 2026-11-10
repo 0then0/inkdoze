@@ -20,19 +20,21 @@ InkDoze resizes, crops and tones images for the exact screen of your e-reader an
 ## How to use
 
 1. Add images: drop PNG, JPEG or WebP files onto the page or choose **Add images**.
-2. Pick your e-reader. Search by model, generation or resolution, or choose **Custom size**.
-3. Read **How to install** for the selected model: whether it can show your own image at all, which firmware or app that needs, the steps and the recommended file name and format.
-4. Adjust framing and tone. **Apply changes to** decides whether a setting affects all images or only the selected one; crop, rotation, zoom and position always belong to one image.
-5. Download the selected image, or all images as a ZIP.
+2. Pick your e-reader once. Search by model, generation or resolution, or choose **Custom size**. InkDoze remembers the choice for your next visit.
+3. Download the selected image, or all images as a ZIP.
+
+That is the whole workflow. **Automatic e-ink adjustment** is on by default: for each image it stretches the contrast and lifts the midtones so it reads well on e-ink, picks colour or grayscale to match the screen, fills the screen at its native resolution and uses the format recommended for the e-reader. The line above the download buttons shows what you will get, for example `480 × 800 px · BMP 24-bit colour · Grayscale`.
+
+**How to install** explains whether the selected model can show your own image at all, which firmware or app that needs, and the file name to use. Everything else is optional: crop, rotate, zoom and position an image under the preview, or open **Manual settings** for size, framing, background, tone, gray levels, dithering and format. **Apply changes to** decides whether a manual setting affects all images or only the selected one.
 
 Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 px per side.
 
 ## Features
 
-- **Device catalog.** 113 models from Kindle, Kobo, BOOX, PocketBook, Xteink, tolino, NOOK, Bigme, Meebook, Supernote, reMarkable and a few niche readers, with generations kept apart. Search by model, generation, alias or resolution (`pw5`, `paperwhite 2021`, `1264x1680`), filter by brand and colour screen, or set a custom size.
+- **Device catalog.** 367 e-readers from 35 brands, from the 2004 Sony Librie to current Kindle, Kobo, BOOX, PocketBook, reMarkable and Xteink models, with generations kept apart. The list is ordered by approximate popularity. Search by model, generation, alias or resolution (`pw5`, `paperwhite 2021`, `1264x1680`), filter by brand and colour screen, or set a custom size.
 - **Honest install guidance.** Screen size and install method are separate. Each method has a status (custom image, book cover only, third-party firmware or app, size confirmed only), a community-documented flag where applicable, steps, limitations and sources with the date they were checked.
 - **Framing.** Fit, Fill and Stretch; crop with aspect lock (mouse, touch or keyboard); zoom; offset; 90° rotation; background colour for empty and transparent areas.
-- **Tone.** Colour or grayscale, brightness, contrast, invert, 256/16/4/2 gray levels and Floyd–Steinberg or Atkinson dithering.
+- **Tone.** Automatic per-image adjustment for e-ink (levels stretch with a capped gain and a midtone curve, measured on the visible part of the image only). Manual colour or grayscale, brightness and contrast on top of it, invert, 256/16/4/2 gray levels and Floyd–Steinberg or Atkinson dithering.
 - **Same pipeline for preview and export.** The preview is rendered at full output resolution by the same code that writes the file. The optional e-ink simulation is labelled as an approximation.
 - **Formats.** PNG, JPEG and uncompressed BMP at 24, 8, 4, 2 and 1 bit. The recommended format and file name come from the selected install method.
 - **Batches.** Drag and drop or pick several PNG, JPEG and WebP files, rename outputs, give single images their own settings, download one file or a ZIP of all. Work runs in a Web Worker with bounded concurrency and can be cancelled.
@@ -41,20 +43,24 @@ Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 
 
 ## Catalog at a glance
 
-| Brand                           | Models | Best documented status                                                    |
-| ------------------------------- | -----: | ------------------------------------------------------------------------- |
-| BOOX                            |     30 | Custom image (Apps › Screensaver); Picco via CrossPoint                   |
-| Kindle                          |     24 | Book cover on stock firmware; custom images need a jailbreak and KOReader |
-| Kobo                            |     17 | Book cover; community-documented `.kobo/screensaver` folder; KOReader     |
-| PocketBook                      |     13 | Size only, except Verse Pro firmware 6.9 logos                            |
-| tolino                          |      5 | Cover only on 2024 models; own picture on earlier models                  |
-| Xteink                          |      4 | CrossPoint `sleep.bmp`; stock wallpaper                                   |
-| NOOK                            |      4 | Screensavers folder on older models; size only on GlowLight 4             |
-| Supernote                       |      4 | Custom image (Settings › Display & Input › Screensaver)                   |
-| reMarkable                      |      5 | Community SSH method                                                      |
-| Bigme, Meebook, DuRoBo, Viwoods |      7 | Size only                                                                 |
+| Brand | Models | Years | Best documented status |
+| --- | ---: | --- | --- |
+| Kindle | 27 | 2007–2025 | Book cover on stock firmware; custom images need a jailbreak (Screen Saver Hack on 2.x–4.x firmware, KOReader) |
+| Kobo | 25 | 2010–2024 | Book cover; community-documented `.kobo/screensaver` folder; KOReader |
+| BOOX | 196 | 2009–2026 | Custom image (Apps › Screensaver) on recent models; «Set as screensaver» on Russian-market models whose manual covers it; Picco via CrossPoint |
+| PocketBook | 23 | 2010–2025 | Size only, except Verse Pro firmware 6.9 logos |
+| Sony | 15 | 2004–2018 | Size only (Reader PRS series, Digital Paper) |
+| tolino | 10 | 2013–2024 | Cover only on 2024 models; own picture on earlier models |
+| Bookeen | 8 | 2004–2014 | Size only (Cybook) |
+| NOOK | 7 | 2011–2023 | Screensavers folder on early models; size only on later ones |
+| reMarkable | 5 | 2017–2026 | Community SSH method |
+| Xteink | 4 | 2025–2026 | CrossPoint `sleep.bmp`; stock wallpaper |
+| Supernote | 4 | 2020–2024 | Custom image (Settings › Display & Input › Screensaver) |
+| 24 other brands | 43 | 2006–2025 | Size only (Bigme, Meebook, Likebook, Boyue, Hanlin, Hanvon, iRex, Icarus and others) |
 
-The data lives in [`src/catalog`](src/catalog) as typed records. Every model has a stable ID, brand, model, generation, aliases, portrait resolution, colour flag, sources and a verification date. Sources are tagged as manufacturer, firmware source, community tooling or secondary. Models backed only by secondary sources are marked in the UI.
+The data lives in [`src/catalog`](src/catalog) as typed records. Every model has a stable ID, brand, model, generation, aliases, portrait resolution, colour flag, sources and a verification date. Sources are tagged as manufacturer, firmware source, community tooling or secondary. Models backed only by secondary sources are marked in the UI. Every ONYX BOOX model sold in Russia, including the archive (Darwin, Faust, Vasco da Gama, Kon-Tiki, Monte Cristo and others), comes from the specification pages of [onyx-boox.ru](https://onyx-boox.ru/), the official distributor. Most other discontinued models are documented on the [MobileRead Wiki](https://wiki.mobileread.com/), maintained by device owners; where firmware-level data exists (CrossPoint, Plato, KOReader) it takes precedence.
+
+The device list is sorted by an approximate popularity score: brand reach, flagship product lines and how recent the model is. There is no public per-model sales data, so the order is an editorial estimate; the weights live in [`src/catalog/popularity.ts`](src/catalog/popularity.ts). Recency is counted from the current year, so the order ages on its own.
 
 Data notes:
 

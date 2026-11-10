@@ -4,10 +4,28 @@ import { useI18n } from '../i18n/index.ts';
 import type { TextKey } from '../i18n/keys.ts';
 import { LIMITS } from '../io/limits.ts';
 import { clampDimension } from '../pipeline/job.ts';
-import type { Dither, FitMode, Levels, OutputSettings, TargetMode } from '../pipeline/types.ts';
+import type { ColorChoice, ColorMode, Dither, FitMode, Levels, OutputSettings, TargetMode } from '../pipeline/types.ts';
 import { useEffect, useState } from 'preact/hooks';
 import { Icon } from './Icon.tsx';
 import type { Action, ImageItem, Scope } from './state.ts';
+
+const MANUAL_KEY = 'inkdoze.manualSettings';
+
+function readManualOpen(): boolean {
+  try {
+    return localStorage.getItem(MANUAL_KEY) === 'open';
+  } catch {
+    return false;
+  }
+}
+
+function writeManualOpen(open: boolean): void {
+  try {
+    localStorage.setItem(MANUAL_KEY, open ? 'open' : 'closed');
+  } catch {
+    // Storage can be unavailable; the panel then starts collapsed.
+  }
+}
 
 /**
  * Number input that keeps the typed draft locally and commits on change/blur, so
@@ -81,9 +99,12 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
   const format: OutputFormat = resolveFormat(s.format, method);
   const info = FORMATS[format];
   const grayOnly = info.grayscaleOnly;
-  const levelsCapped = s.colorMode === 'grayscale' || grayOnly ? s.levels > info.maxLevels : false;
+  const autoColor: ColorMode = device?.color ? 'color' : 'grayscale';
+  const colorMode: ColorMode = grayOnly ? 'grayscale' : s.colorMode === 'auto' ? autoColor : s.colorMode;
+  const levelsCapped = colorMode === 'grayscale' ? s.levels > info.maxLevels : false;
   const effectiveLevels = Math.min(s.levels, info.maxLevels);
-  const ditherActive = (grayOnly || s.colorMode === 'grayscale') && effectiveLevels < 256;
+  const ditherActive = colorMode === 'grayscale' && effectiveLevels < 256;
+  const [manualOpen, setManualOpen] = useState(readManualOpen);
   const formats = selectableFormats(method);
   const unconfirmed = method && method.formats.length > 0 && !method.formats.includes(format);
   const oneDisabled = !selected;
@@ -94,6 +115,25 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
         <h2 id="settings-title">{t('settings.title')}</h2>
       </div>
 
+      <label class="auto-card">
+        <input type="checkbox" checked={s.autoTone} data-testid="auto-tone" onChange={(e) => set({ autoTone: e.currentTarget.checked })} />
+        <span>
+          <strong>{t('settings.auto')}</strong>
+          <span class="hint">{t('settings.autoHint')}</span>
+        </span>
+      </label>
+
+      <details
+        class="manual"
+        open={manualOpen}
+        onToggle={(e) => {
+          const open = (e.currentTarget as HTMLDetailsElement).open;
+          setManualOpen(open);
+          writeManualOpen(open);
+        }}
+      >
+        <summary data-testid="manual-settings">{t('settings.manual')}</summary>
+        <div class="manual-body">
       <div class={`scope scope-${scope}`}>
         <Radios
           name="scope"
@@ -173,18 +213,23 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
       </div>
 
       <h3 class="section-title">{t('settings.tone')}</h3>
-      <Radios
+      <Radios<ColorChoice>
         name="color-mode"
         legend={t('settings.colorMode')}
         value={grayOnly ? 'grayscale' : s.colorMode}
         options={[
+          ['auto', t('settings.colorAuto')],
           ['grayscale', t('settings.grayscale')],
           ['color', t('settings.color')],
         ]}
-        disabled={(v) => v === 'color' && grayOnly}
+        disabled={(v) => v !== 'grayscale' && grayOnly}
         onChange={(v) => set({ colorMode: v })}
       />
-      {grayOnly && <p class="hint">{t('settings.colorForced')}</p>}
+      {grayOnly ? (
+        <p class="hint">{t('settings.colorForced')}</p>
+      ) : (
+        s.colorMode === 'auto' && <p class="hint">{t('settings.colorAutoHint', { mode: t(autoColor === 'color' ? 'settings.color' : 'settings.grayscale') })}</p>
+      )}
 
       {(['brightness', 'contrast'] as const).map((key) => (
         <div class="slider" key={key}>
@@ -193,12 +238,13 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
           <output for={`tone-${key}`}>{s[key]}</output>
         </div>
       ))}
+      {s.autoTone && <p class="hint">{t('settings.toneOnTop')}</p>}
       <label class="toggle">
         <input type="checkbox" checked={s.invert} onChange={(e) => set({ invert: e.currentTarget.checked })} />
         <span>{t('settings.invert')}</span>
       </label>
 
-      {(s.colorMode === 'grayscale' || grayOnly) && (
+      {colorMode === 'grayscale' && (
         <>
           <Radios<Levels>
             name="levels"
@@ -254,6 +300,8 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
           <output for="jpeg-quality">{Math.round(s.jpegQuality * 100)}</output>
         </div>
       )}
+        </div>
+      </details>
     </section>
   );
 }

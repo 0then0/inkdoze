@@ -72,7 +72,10 @@ for (const vp of VIEWPORTS) {
 
     for (const locale of LOCALES) {
       test(`${locale}: text fits and nothing overflows`, async ({ page }, info) => {
-        await page.addInitScript((l) => localStorage.setItem('inkdoze.locale', l), locale);
+        await page.addInitScript((l) => {
+          localStorage.setItem('inkdoze.locale', l);
+          localStorage.setItem('inkdoze.manualSettings', 'open');
+        }, locale);
         await page.goto('./');
         await expect(page.locator('html')).toHaveAttribute('lang', locale);
 

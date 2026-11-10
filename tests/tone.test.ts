@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyTone, flattenAlpha, levelIndex, luma, paletteFor, parseHexColor, quantizeGray, toneCurve } from '../src/pipeline/tone.ts';
+import { applyTone, autoToneCurve, composeLut, flattenAlpha, levelIndex, luma, paletteFor, parseHexColor, quantizeGray, toneCurve } from '../src/pipeline/tone.ts';
 import type { Dither, Levels } from '../src/pipeline/types.ts';
 
 describe('transparency', () => {
@@ -106,5 +106,66 @@ describe('palettes and dithering', () => {
     const copy = g.slice();
     quantizeGray(g, 16, 1, 256, 'floyd-steinberg');
     expect(g).toEqual(copy);
+  });
+});
+
+describe('automatic tone', () => {
+  const image = (w: number, h: number, value: (x: number, y: number) => number) => {
+    const px = new Uint8ClampedArray(w * h * 4);
+    for (let y = 0; y < h; y++)
+      for (let x = 0; x < w; x++) {
+        const v = value(x, y);
+        px.set([v, v, v, 255], (y * w + x) * 4);
+      }
+    return px;
+  };
+  const whole = (w: number, h: number) => ({ x: 0, y: 0, w, h });
+  const monotonic = (lut: Uint8Array) => {
+    for (let i = 1; i < 256; i++) expect(lut[i]!).toBeGreaterThanOrEqual(lut[i - 1]!);
+  };
+
+  it('stretches a washed-out image towards the full range', () => {
+    const px = image(64, 64, (x) => 100 + Math.round((x / 63) * 50));
+    const lut = autoToneCurve(px, 64, whole(64, 64));
+    monotonic(lut);
+    expect(lut[150]! - lut[100]!).toBeGreaterThan(100);
+  });
+
+  it('caps the gain so a nearly flat image is not blown out', () => {
+    const px = image(32, 32, (x) => 120 + (x % 2));
+    const lut = autoToneCurve(px, 32, whole(32, 32));
+    monotonic(lut);
+    expect(lut[121]! - lut[120]!).toBeLessThanOrEqual(4);
+    expect(lut[120]).toBeGreaterThan(40);
+    expect(lut[120]).toBeLessThan(215);
+  });
+
+  it('keeps a full-range, balanced image close to the original', () => {
+    const px = image(256, 4, (x) => x);
+    const lut = autoToneCurve(px, 256, whole(256, 4));
+    expect(lut[0]).toBe(0);
+    expect(lut[255]).toBe(255);
+    expect(Math.abs(lut[128]! - 128)).toBeLessThan(20);
+  });
+
+  it('lifts the midtones of a dark image', () => {
+    const px = image(64, 64, (x, y) => ((x + y) % 64 < 56 ? 20 + ((x * 3) % 40) : 255));
+    const lut = autoToneCurve(px, 64, whole(64, 64));
+    expect(lut[60]).toBeGreaterThan(60);
+  });
+
+  it('measures only the placed image, not the letterbox', () => {
+    // Left half black letterbox, right half the image (values 100..200).
+    const px = image(64, 8, (x) => (x < 32 ? 0 : 100 + Math.round(((x - 32) / 31) * 100)));
+    const lut = autoToneCurve(px, 64, { x: 32, y: 0, w: 32, h: 8 });
+    expect(lut[100]).toBeLessThan(10);
+    expect(lut[200]).toBeGreaterThan(245);
+  });
+
+  it('composes curves in order', () => {
+    const inner = new Uint8Array(256).map((_, i) => Math.min(255, i * 2));
+    const outer = toneCurve(0, 0, true);
+    const c = composeLut(outer, inner);
+    expect(c[10]).toBe(255 - 20);
   });
 });

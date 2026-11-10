@@ -1,5 +1,6 @@
-import { BRANDS, deviceStatus, groupByBrand, searchDevices, type Device } from '../catalog/index.ts';
+import { BRANDS_BY_POPULARITY, deviceStatus, searchDevices, type Device } from '../catalog/index.ts';
 import type { Brand } from '../catalog/types.ts';
+import { useState } from 'preact/hooks';
 import { generationLabel, useI18n } from '../i18n/index.ts';
 import { Icon } from './Icon.tsx';
 import type { Action, AppState } from './state.ts';
@@ -10,11 +11,30 @@ interface Props {
   dispatch: (a: Action) => void;
 }
 
+/** Brands shown as chips before the "More brands" disclosure. */
+const MAIN_BRANDS = 12;
+
+/** "Kindle Paperwhite", but "Kindle 2" rather than "Kindle Kindle 2". */
+export function displayName(d: Device): string {
+  return d.model.toLowerCase().startsWith(d.brand.toLowerCase()) ? d.model : `${d.brand} ${d.model}`;
+}
+
+function BrandChip({ brand, checked, onToggle }: { brand: Brand; checked: boolean; onToggle: () => void }) {
+  return (
+    <label class="chip">
+      <input type="checkbox" checked={checked} onChange={onToggle} />
+      <span>{brand}</span>
+    </label>
+  );
+}
+
 export function DevicePanel({ state, device, dispatch }: Props) {
   const tr = useI18n();
+  const hiddenSelected = state.brands.some((b) => BRANDS_BY_POPULARITY.indexOf(b) >= MAIN_BRANDS);
+  // The disclosure keeps the state the user gave it; it only opens itself to show a selected hidden brand.
+  const [moreOpen, setMoreOpen] = useState(hiddenSelected);
   const { t, tp } = tr;
   const results = searchDevices({ query: state.query, brands: state.brands, color: state.colorFilter });
-  const groups = groupByBrand(results);
   const filtered = state.query !== '' || state.brands.length > 0 || state.colorFilter !== 'any';
 
   return (
@@ -45,12 +65,17 @@ export function DevicePanel({ state, device, dispatch }: Props) {
 
       <fieldset class="chips">
         <legend>{t('device.brands')}</legend>
-        {BRANDS.map((b: Brand) => (
-          <label key={b} class="chip">
-            <input type="checkbox" checked={state.brands.includes(b)} onChange={() => dispatch({ type: 'toggleBrand', brand: b })} />
-            <span>{b}</span>
-          </label>
+        {BRANDS_BY_POPULARITY.slice(0, MAIN_BRANDS).map((b) => (
+          <BrandChip key={b} brand={b} checked={state.brands.includes(b)} onToggle={() => dispatch({ type: 'toggleBrand', brand: b })} />
         ))}
+        <details class="more-brands" open={moreOpen || hiddenSelected} onToggle={(e) => setMoreOpen((e.currentTarget as HTMLDetailsElement).open)}>
+          <summary>{t('device.moreBrands', { count: BRANDS_BY_POPULARITY.length - MAIN_BRANDS })}</summary>
+          <div class="chips-more">
+            {BRANDS_BY_POPULARITY.slice(MAIN_BRANDS).map((b) => (
+              <BrandChip key={b} brand={b} checked={state.brands.includes(b)} onToggle={() => dispatch({ type: 'toggleBrand', brand: b })} />
+            ))}
+          </div>
+        </details>
       </fieldset>
 
       <fieldset class="segmented" role="radiogroup">
@@ -86,27 +111,22 @@ export function DevicePanel({ state, device, dispatch }: Props) {
           <span class="device-name">{t('device.custom')}</span>
           <span class="device-meta">{t('device.customHint')}</span>
         </label>
-        {groups.length === 0 && <p class="hint">{t('device.none')}</p>}
-        {groups.map(([brand, list]) => (
-          <div class="device-group" key={brand} role="group" aria-label={brand}>
-            <h3>{brand}</h3>
-            {list.map((d) => (
-              <label key={d.id} class={`device-option${state.deviceId === d.id ? ' selected' : ''}`} data-device={d.id}>
-                <input type="radio" name="device" value={d.id} checked={state.deviceId === d.id} onChange={() => dispatch({ type: 'selectDevice', id: d.id })} />
-                <span class="device-name">
-                  {d.model}
-                  {d.color && <span class="dot" title={t('device.color')} aria-label={t('device.color')} />}
-                </span>
-                <span class="device-meta">
-                  <span class="gen">{generationLabel(d, tr)}</span>
-                  <span class="res">
-                    {d.resolution.width}×{d.resolution.height}
-                  </span>
-                </span>
-                <span class={`status-pip status-${deviceStatus(d)}`} title={t(`status.${deviceStatus(d)}`)} aria-hidden="true" />
-              </label>
-            ))}
-          </div>
+        {results.length === 0 && <p class="hint">{t('device.none')}</p>}
+        {results.map((d) => (
+          <label key={d.id} class={`device-option${state.deviceId === d.id ? ' selected' : ''}`} data-device={d.id}>
+            <input type="radio" name="device" value={d.id} checked={state.deviceId === d.id} onChange={() => dispatch({ type: 'selectDevice', id: d.id })} />
+            <span class="device-name">
+              {displayName(d)}
+              {d.color && <span class="dot" title={t('device.color')} aria-label={t('device.color')} />}
+            </span>
+            <span class="device-meta">
+              <span class="gen">{generationLabel(d, tr)}</span>
+              <span class="res">
+                {d.resolution.width}×{d.resolution.height}
+              </span>
+            </span>
+            <span class={`status-pip status-${deviceStatus(d)}`} title={t(`status.${deviceStatus(d)}`)} aria-hidden="true" />
+          </label>
         ))}
       </div>
       {device === undefined && state.deviceId !== null && <p class="hint">{t('device.none')}</p>}

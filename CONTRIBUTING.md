@@ -36,7 +36,7 @@ Acceptable sources, best first:
 | --- | --- | --- |
 | `manufacturer` | Spec page, datasheet, manual, help center | Must state the pixel grid. A page that only gives ppi is `secondary` for the resolution. |
 | `firmware` | Stock or open firmware source, SDK panel definitions | Link to a tag or commit, not a moving branch. |
-| `community` | KOReader, Kindle Comic Converter, other tools whose values come from real devices | Prefer data backed by device screenshots or framebuffer dumps. |
+| `community` | KOReader, Plato, Kindle Comic Converter, MobileRead Wiki device pages | Prefer data backed by device screenshots or framebuffer dumps. Check wiki pages against each other: some are copied between models. |
 | `secondary` | Retailers, reviews, comparison sites | Allowed only when nothing better exists; the UI shows a warning. Use two independent sources. |
 
 For colour panels (Kaleido, Gallery), record the full black-and-white grid. If sources disagree, use the one closest to the hardware and add a `note` explaining the difference (see `note.kindle.marketingResolution`).
@@ -62,6 +62,10 @@ For colour panels (Kaleido, Gallery), record the full black-and-white grid. If s
 - IDs and aliases must be unique across the catalog.
 - `generation` must not contain English words other than names; numbered generations use `ordinal` so every language can render them.
 - `verified` is set by the brand helper; update `VERIFIED` in the file when you recheck a group of records.
+
+ONYX BOOX models for the Russian market live in [`src/catalog/devices-boox-ru.ts`](src/catalog/devices-boox-ru.ts) and cite the product's specification tab on onyx-boox.ru. Brands with only a few, mostly discontinued models live in [`src/catalog/devices-other.ts`](src/catalog/devices-other.ts). A new brand also needs an entry in `BRANDS` ([`src/catalog/types.ts`](src/catalog/types.ts)) and a reach value in [`src/catalog/popularity.ts`](src/catalog/popularity.ts).
+
+Leave a model out rather than guessing: skip it when the only source gives an implausible grid (for example 1024 × 768 for a 6-inch 212 ppi panel), contradicts itself, or has no release year.
 
 ### 3. Link an install method
 

@@ -2,7 +2,7 @@ import { encodeBmp } from '../formats/bmp.ts';
 import { encodePxc } from '../formats/pxc.ts';
 import type { OutputFormat } from '../catalog/types.ts';
 import { layout } from './geometry.ts';
-import { applyTone, flattenAlpha, luma, parseHexColor, quantizeGray, toneCurve } from './tone.ts';
+import { applyTone, autoToneCurve, composeLut, flattenAlpha, luma, parseHexColor, quantizeGray, toneCurve } from './tone.ts';
 import type { RenderJob, Size } from './types.ts';
 
 export interface Rendered {
@@ -45,7 +45,9 @@ export function renderPixels(source: CanvasImageSource, sourceSize: Size, job: R
   const image = ctx.getImageData(0, 0, width, height);
   const rgba = image.data;
   flattenAlpha(rgba, parseHexColor(job.background));
-  const lut = toneCurve(job.brightness, job.contrast, job.invert);
+  const manual = toneCurve(job.brightness, job.contrast, job.invert);
+  // Automatic tone runs first; manual brightness and contrast fine-tune its result.
+  const lut = job.autoTone ? composeLut(manual, autoToneCurve(rgba, width, l.clip)) : manual;
   const gray = applyTone(rgba, lut, job.colorMode === 'grayscale');
   if (gray) {
     quantizeGray(gray, width, height, job.levels, job.dither);

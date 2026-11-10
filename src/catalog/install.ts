@@ -8,8 +8,10 @@ export type InstallMethodId =
   | 'xteink-stock-official'
   | 'xteink-stock-community'
   | 'boox-screensaver'
+  | 'onyx-ru-screensaver'
   | 'kindle-cover'
   | 'koreader-kindle'
+  | 'kindle-linkss'
   | 'kobo-cover'
   | 'kobo-screensaver-folder'
   | 'koreader-kobo'
@@ -96,6 +98,22 @@ export const INSTALL_METHODS: Record<InstallMethodId, InstallMethod> = {
     sources: [SRC.booxScreensavers],
     verified: VERIFIED,
   },
+  'onyx-ru-screensaver': {
+    id: 'onyx-ru-screensaver',
+    status: 'custom-image',
+    software: 'ONYX BOOX firmware for Russia',
+    communityDocumented: false,
+    formats: ['png', 'jpeg'],
+    recommendedFormat: 'png',
+    steps: [
+      { key: 'install.onyxRu.copy' },
+      { key: 'install.onyxRu.set', params: { action: 'Установить как заставку' } },
+      { key: 'install.onyxRu.choose', params: { option: 'Экран выключенного устройства', confirm: 'Confirm' } },
+    ],
+    limitations: [{ key: 'limit.onyxRu.powerOff' }],
+    sources: [SRC.onyxRuManual],
+    verified: VERIFIED,
+  },
   'kindle-cover': {
     id: 'kindle-cover',
     status: 'cover-only',
@@ -125,6 +143,22 @@ export const INSTALL_METHODS: Record<InstallMethodId, InstallMethod> = {
     ],
     limitations: [{ key: 'limit.koreader.onlyInKoreader' }],
     sources: [SRC.koreaderScreensaverMenu, SRC.koreaderImageTypes],
+    verified: VERIFIED,
+  },
+  'kindle-linkss': {
+    id: 'kindle-linkss',
+    status: 'third-party',
+    software: 'Kindle firmware 2.x–4.x with the Screen Saver Hack',
+    communityDocumented: true,
+    formats: ['png', 'jpeg'],
+    recommendedFormat: 'png',
+    steps: [
+      { key: 'install.linkss.jailbreak' },
+      { key: 'install.linkss.copy', params: { dir: 'linkss/screensavers' } },
+      { key: 'install.linkss.restart' },
+    ],
+    limitations: [{ key: 'limit.linkss.firmware' }],
+    sources: [SRC.linkss],
     verified: VERIFIED,
   },
   'kobo-cover': {

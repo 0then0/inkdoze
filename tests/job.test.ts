@@ -35,6 +35,22 @@ describe('render job', () => {
     expect(effectiveTone('bmp1', 'grayscale', 16)).toEqual({ colorMode: 'grayscale', levels: 2 });
   });
 
+  it('picks colour or grayscale from the e-reader in auto colour mode', () => {
+    const colour = buildJob(src, DEFAULT_SETTINGS, DEFAULT_ADJUST, getDevice('kobo-libra-colour'), 'png');
+    expect(colour.ok && colour.job.colorMode).toBe('color');
+    const gray = buildJob(src, DEFAULT_SETTINGS, DEFAULT_ADJUST, x4, 'png');
+    expect(gray.ok && gray.job.colorMode).toBe('grayscale');
+    const forced = buildJob(src, DEFAULT_SETTINGS, DEFAULT_ADJUST, getDevice('kobo-libra-colour'), 'bmp8');
+    expect(forced.ok && forced.job.colorMode).toBe('grayscale');
+    const manual = buildJob(src, { ...DEFAULT_SETTINGS, colorMode: 'grayscale' }, DEFAULT_ADJUST, getDevice('kobo-libra-colour'), 'png');
+    expect(manual.ok && manual.job.colorMode).toBe('grayscale');
+  });
+
+  it('enables automatic tone by default', () => {
+    const r = buildJob(src, DEFAULT_SETTINGS, DEFAULT_ADJUST, x4, 'png');
+    expect(r.ok && r.job.autoTone).toBe(true);
+  });
+
   it('resolves the recommended format from the install method', () => {
     expect(resolveFormat('auto', getInstallMethod('crosspoint'))).toBe('bmp24');
     expect(resolveFormat('auto', getInstallMethod('kobo-screensaver-folder'))).toBe('jpeg');

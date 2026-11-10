@@ -36,7 +36,8 @@ export function buildJob(
   ) {
     return { ok: false, error: 'outputTooLarge' };
   }
-  const tone = effectiveTone(format, settings.colorMode, settings.levels);
+  const colorMode = settings.colorMode === 'auto' ? (device?.color ? 'color' : 'grayscale') : settings.colorMode;
+  const tone = effectiveTone(format, colorMode, settings.levels);
   return {
     ok: true,
     job: {
@@ -49,6 +50,7 @@ export function buildJob(
       offsetY: adjust.offsetY,
       background: settings.background,
       colorMode: tone.colorMode,
+      autoTone: settings.autoTone,
       brightness: settings.brightness,
       contrast: settings.contrast,
       invert: settings.invert,

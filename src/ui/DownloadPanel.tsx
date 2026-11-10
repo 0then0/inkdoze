@@ -11,6 +11,7 @@ export interface Progress {
 interface Props {
   selected: ImageItem | undefined;
   fileName: string | null;
+  summary: string | null;
   readyCount: number;
   progress: Progress | null;
   message: string | null;
@@ -19,7 +20,7 @@ interface Props {
   onCancel: () => void;
 }
 
-export function DownloadPanel({ selected, fileName, readyCount, progress, message, onOne, onAll, onCancel }: Props) {
+export function DownloadPanel({ selected, fileName, summary, readyCount, progress, message, onOne, onAll, onCancel }: Props) {
   const { t } = useI18n();
   const busy = progress !== null;
   return (
@@ -27,6 +28,11 @@ export function DownloadPanel({ selected, fileName, readyCount, progress, messag
       <h2 id="download-title" class="sr-only">
         {t('download.title')}
       </h2>
+      {summary && (
+        <p class="small muted" data-testid="output-summary">
+          {summary}
+        </p>
+      )}
       {fileName && (
         <p class="small file-name-preview">
           <Rich k="download.name" params={{ name: fileName }} code={['name']} />

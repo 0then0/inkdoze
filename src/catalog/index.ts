@@ -1,8 +1,9 @@
 import { DEVICES } from './devices.ts';
+import { brandsByPopularity, byPopularity, popularity } from './popularity.ts';
 import { INSTALL_METHODS, getInstallMethod } from './install.ts';
 import { BRANDS, type Brand, type Device, type InstallMethod, type InstallStatus, type OutputFormat } from './types.ts';
 
-export { DEVICES, INSTALL_METHODS, BRANDS, getInstallMethod };
+export { DEVICES, INSTALL_METHODS, BRANDS, getInstallMethod, popularity, byPopularity, brandsByPopularity };
 export type { Brand, Device, InstallMethod, InstallStatus, OutputFormat };
 
 const BY_ID = new Map(DEVICES.map((d) => [d.id, d]));
@@ -35,18 +36,28 @@ export function normalize(text: string): string {
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/[×]/g, 'x')
-    .replace(/[^a-z0-9.]+/g, ' ')
+    .replace(/[^\p{L}\p{N}.]+/gu, ' ')
     .trim();
 }
 
 function haystack(d: Device): string {
   const { width: w, height: h } = d.resolution;
   return normalize(
-    [d.brand, d.model, d.generation, String(d.year), ...d.aliases, `${w}x${h}`, `${h}x${w}`, d.id.replace(/-/g, ' ')].join(' '),
+    [d.brand, d.model, d.generation, String(d.year), ...d.aliases, `${w}x${h}`, `${h}x${w}`, String(w), String(h), d.id.replace(/-/g, ' ')].join(' '),
   );
 }
 
 const HAYSTACKS = new Map(DEVICES.map((d) => [d.id, haystack(d)]));
+const WORDS = new Map([...HAYSTACKS].map(([id, hay]) => [id, new Set(hay.split(' '))]));
+
+/** Numbers match whole words only, so "volta 5" does not match "758 × 1024"; text matches anywhere. */
+function matches(id: string, hay: string, token: string): boolean {
+  if (/^\d+$/.test(token)) return (WORDS.get(id) ?? new Set(hay.split(' '))).has(token);
+  return hay.includes(token);
+}
+
+/** Brands ordered by their most popular model, for the brand filter. */
+export const BRANDS_BY_POPULARITY = brandsByPopularity(DEVICES);
 
 export interface DeviceFilter {
   query?: string;
@@ -64,18 +75,8 @@ export function searchDevices(filter: DeviceFilter, devices: readonly Device[] =
     if (filter.color === 'grayscale' && d.color) return false;
     if (tokens.length === 0) return true;
     const hay = HAYSTACKS.get(d.id) ?? haystack(d);
-    return tokens.every((t) => hay.includes(t));
-  });
-}
-
-/** Devices grouped by brand in catalog order, newest generation first. */
-export function groupByBrand(devices: readonly Device[]): Array<[Brand, Device[]]> {
-  const groups = new Map<Brand, Device[]>();
-  for (const b of BRANDS) groups.set(b, []);
-  for (const d of devices) groups.get(d.brand)?.push(d);
-  return [...groups.entries()]
-    .filter(([, list]) => list.length > 0)
-    .map(([b, list]) => [b, [...list].sort((x, y) => y.year - x.year || x.model.localeCompare(y.model))]);
+    return tokens.every((t) => matches(d.id, hay, t));
+  }).sort(byPopularity);
 }
 
 /** Other catalog devices with the exact same native resolution. */

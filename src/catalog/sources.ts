@@ -167,6 +167,21 @@ export const SRC = {
     title: 'Supernote Support: custom note template image sizes per model',
     url: 'https://support.supernote.com/how-to-create-a-custom-note-template',
   },
+  plato: {
+    kind: 'community',
+    title: 'Plato reader for Kobo: framebuffer size per model',
+    url: 'https://github.com/baskerville/plato/blob/7da89f296e58c7426692abb6fda16431b9631e60/crates/core/src/device.rs',
+  },
+  linkss: {
+    kind: 'community',
+    title: 'MobileRead Wiki: Kindle Screen Saver Hack for 2.x, 3.x and 4.x Kindles',
+    url: 'https://wiki.mobileread.com/wiki/Kindle_Screen_Saver_Hack_for_all_2.x,_3.x_%26_4.x_Kindles',
+  },
+  onyxRuManual: {
+    kind: 'manufacturer',
+    title: 'ONYX BOOX Volta user manual: changing the power-off screen image (copy on mcgrp.ru)',
+    url: 'https://mcgrp.ru/files/viewer/825888/16',
+  },
   remarkableGuide: {
     kind: 'community',
     title: 'remarkable.guide: Manage system splash screens',
@@ -192,6 +207,16 @@ export function tolinoProduct(slug: string, title: string): Source {
 
 export function bigmeProduct(handle: string, title: string): Source {
   return { kind: 'manufacturer', title: `Bigme official store: ${title}`, url: `https://store.bigme.vip/products/${handle}` };
+}
+
+/** A device page on the MobileRead Wiki, maintained by device owners. */
+export function mobileread(page: string, title: string): Source {
+  return { kind: 'community', title: `MobileRead Wiki: ${title}`, url: `https://wiki.mobileread.com/wiki/${encodeURIComponent(page.replace(/ /g, '_')).replace(/%2F/g, '/')}` };
+}
+
+/** Product page on onyx-boox.ru, the official ONYX distributor site for Russia. */
+export function onyxRuProduct(slug: string, title: string): Source {
+  return { kind: 'manufacturer', title: `ONYX BOOX Russia: ${title} specifications`, url: `https://onyx-boox.ru/${slug}#tabSpecs` };
 }
 
 export function secondary(title: string, url: string): Source {

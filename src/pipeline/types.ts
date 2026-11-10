@@ -4,6 +4,8 @@ export type Rotation = 0 | 90 | 180 | 270;
 export type FitMode = 'fit' | 'fill' | 'stretch';
 export type TargetMode = 'device' | 'original' | 'custom';
 export type ColorMode = 'grayscale' | 'color';
+/** `auto` follows the selected e-reader: colour panels get colour, the rest grayscale. */
+export type ColorChoice = 'auto' | ColorMode;
 export type Levels = 256 | 16 | 4 | 2;
 export type Dither = 'none' | 'floyd-steinberg' | 'atkinson';
 export type FormatChoice = OutputFormat | 'auto';
@@ -36,7 +38,9 @@ export interface OutputSettings {
   customHeight: number;
   fit: FitMode;
   background: string;
-  colorMode: ColorMode;
+  colorMode: ColorChoice;
+  /** Stretch the tonal range and balance midtones per image for e-ink. */
+  autoTone: boolean;
   brightness: number;
   contrast: number;
   invert: boolean;
@@ -61,7 +65,8 @@ export const DEFAULT_SETTINGS: OutputSettings = {
   customHeight: 1448,
   fit: 'fill',
   background: '#ffffff',
-  colorMode: 'grayscale',
+  colorMode: 'auto',
+  autoTone: true,
   brightness: 0,
   contrast: 0,
   invert: false,
@@ -90,6 +95,7 @@ export interface RenderJob {
   offsetY: number;
   background: string;
   colorMode: ColorMode;
+  autoTone: boolean;
   brightness: number;
   contrast: number;
   invert: boolean;

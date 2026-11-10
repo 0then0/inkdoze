@@ -24,7 +24,10 @@ import {
 const png = (name: string, buffer: Buffer) => ({ name, mimeType: 'image/png', buffer });
 
 async function open(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('inkdoze.locale', 'en'));
+  await page.addInitScript(() => {
+    localStorage.setItem('inkdoze.locale', 'en');
+    localStorage.setItem('inkdoze.manualSettings', 'open');
+  });
   await page.goto('./');
   await expect(page.getByRole('heading', { name: 'InkDoze' })).toBeVisible();
 }
@@ -44,6 +47,8 @@ test.describe('single image', () => {
   test('Xteink X4 default: 480×800 BMP for CrossPoint with correct fill crop', async ({ page }) => {
     await addFiles(page, [png('quadrants.png', quadrants())]);
     await waitReady(page, 1);
+    // Exact grayscale values below check geometry, so measure without automatic tone.
+    await page.getByTestId('auto-tone').uncheck();
     await waitPreview(page, '480 × 800');
     await expect(page.getByTestId('install-method')).toHaveAttribute('data-method', 'crosspoint');
     await expect(page.locator('.file-name-preview code')).toHaveText('quadrants.bmp');
@@ -68,6 +73,43 @@ test.describe('single image', () => {
     expectGray(d.at(380, 600), luma(YELLOW), 3);
     // Our own reading of the file agrees with the browser's decoder.
     expect(bmpPixel(bytes, h, 100, 200)).toBe(d.at(100, 200)[1]);
+  });
+
+  test('automatic mode: add an image and download, no settings touched', async ({ page }) => {
+    // Washed-out photo: grays 100..180 only, varying top to bottom so Fill keeps the whole range.
+    const flat = makePng(300, 200, (_x, y) => {
+      const v = 100 + Math.round((y / 199) * 80);
+      return [v, v, v, 255];
+    });
+    await addFiles(page, [png('flat.png', flat)]);
+    await waitReady(page, 1);
+    await expect(page.getByTestId('auto-tone')).toBeChecked();
+    await waitPreview(page, '480 × 800');
+    await expect(page.getByTestId('output-summary')).toHaveText('480 × 800 px · BMP 24-bit colour · Grayscale');
+    const { bytes } = await downloadOne(page);
+    const h = parseBmp(bytes);
+    let min = 255;
+    let max = 0;
+    for (let y = 0; y < h.height; y += 20)
+      for (let x = 0; x < h.width; x += 20) {
+        const v = bmpPixel(bytes, h, x, y);
+        min = Math.min(min, v);
+        max = Math.max(max, v);
+      }
+    // Contrast is stretched well beyond the 80-level input range.
+    expect(max - min).toBeGreaterThan(200);
+  });
+
+  test('automatic colour follows a colour e-reader', async ({ page }) => {
+    await page.locator('[data-device="kobo-libra-colour"]').click();
+    await addFiles(page, [png('q.png', quadrants())]);
+    await waitReady(page, 1);
+    await waitPreview(page, '1264 × 1680');
+    await expect(page.getByTestId('output-summary')).toContainText('Colour');
+    const { bytes } = await downloadOne(page);
+    const d = await decodeInPage(page, bytes, 'image/png', [[200, 400]]);
+    // Fill crops the centre of the 2:1 image: the top-left quadrant is red, not gray.
+    expectColor(d.at(200, 400), RED, 10);
   });
 
   test('rotation, original size and colour PNG', async ({ page }) => {
@@ -237,6 +279,18 @@ test.describe('single image', () => {
     await waitReady(page, 1);
     await expect(page.locator('.file-item').first()).toContainText('300 × 500');
     await waitPreview(page, '480 × 800');
+  });
+
+  test('the "More brands" disclosure stays open while brands are toggled', async ({ page }) => {
+    const more = page.locator('.more-brands');
+    await more.locator('summary').click();
+    const chip = more.locator('.chip').first();
+    await chip.click();
+    await expect(page.locator('[data-device]').first()).toBeVisible();
+    await chip.click();
+    await expect(more).toHaveJSProperty('open', true);
+    await more.locator('summary').click();
+    await expect(more).toHaveJSProperty('open', false);
   });
 
   test('decoding errors appear next to the file', async ({ page }) => {

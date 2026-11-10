@@ -19,10 +19,24 @@ import { Logo } from './Icon.tsx';
 import { InstallGuide } from './InstallGuide.tsx';
 import { PreviewStage, type PreviewFrame } from './PreviewStage.tsx';
 import { SettingsPanel } from './SettingsPanel.tsx';
-import { effectiveSettings, initialState, reducer, type ImageItem } from './state.ts';
+import { effectiveSettings, initialState, reducer, type AppState, type ImageItem } from './state.ts';
 import { saveBlob } from './save.ts';
 
 const LOCALE_KEY = 'inkdoze.locale';
+const DEVICE_KEY = 'inkdoze.device';
+const CUSTOM_DEVICE = 'custom';
+
+/** Start with the e-reader chosen on the previous visit, so returning users only add images and download. */
+function initState(): AppState {
+  try {
+    const saved = localStorage.getItem(DEVICE_KEY);
+    if (saved === CUSTOM_DEVICE) return reducer(initialState, { type: 'selectDevice', id: null });
+    if (saved && getDevice(saved)) return reducer(initialState, { type: 'selectDevice', id: saved });
+  } catch {
+    // Storage can be unavailable; fall back to the default e-reader.
+  }
+  return initialState;
+}
 
 function initialLocale(): Locale {
   try {
@@ -58,7 +72,7 @@ export function App() {
   const [locale, setLocale] = useState<Locale>(initialLocale);
   const tr = useMemo(() => createTranslator(locale), [locale]);
   const { t, tp } = tr;
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, undefined, initState);
   const stateRef = useRef(state);
   stateRef.current = state;
 
@@ -95,6 +109,14 @@ export function App() {
       // Ignore storage failures.
     }
   }, [locale, tr]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DEVICE_KEY, state.deviceId ?? CUSTOM_DEVICE);
+    } catch {
+      // Ignore storage failures.
+    }
+  }, [state.deviceId]);
 
   const formatFor = useCallback((item: ImageItem | undefined) => resolveFormat(effectiveSettings(stateRef.current, item).format, method), [method]);
   const extensionFor = useCallback((item: ImageItem) => FORMATS[formatFor(item)].extension, [formatFor]);
@@ -280,6 +302,7 @@ export function App() {
       offsetY: 0,
       background: '#ffffff',
       colorMode: 'color',
+      autoTone: false,
       brightness: 0,
       contrast: 0,
       invert: false,
@@ -379,6 +402,18 @@ export function App() {
 
   const cancelExport = () => exportAbort.current?.abort();
 
+  // What the download will contain, so the defaults can be trusted without opening the settings.
+  const summary = (() => {
+    if (!selected || selected.status !== 'ready') return null;
+    const job = jobFor(selected);
+    if (!job) return null;
+    return [
+      t('preview.size', { w: String(job.target.width), h: String(job.target.height) }),
+      t(`format.${formatFor(selected)}`),
+      t(job.colorMode === 'color' ? 'settings.color' : 'settings.grayscale'),
+    ].join(' · ');
+  })();
+
   // ---------------------------------------------------------------- render
   const step = (delta: number) => {
     const list = stateRef.current.images;
@@ -471,6 +506,7 @@ export function App() {
           <DownloadPanel
             selected={selected}
             fileName={selected ? outputName(selected) : null}
+            summary={summary}
             readyCount={readyCount}
             progress={progress}
             message={message}
