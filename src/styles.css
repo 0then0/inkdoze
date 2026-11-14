@@ -1238,6 +1238,15 @@ input[type='color'] {
   gap: 6px;
 }
 
+.download-epub {
+  display: grid;
+  gap: 4px;
+}
+
+.download-epub .hint {
+  margin: 0;
+}
+
 .file-name-preview {
   overflow-wrap: anywhere;
 }

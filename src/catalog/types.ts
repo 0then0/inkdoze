@@ -93,6 +93,11 @@ export interface InstallMethod {
   recommendedFormat?: OutputFormat;
   /** Suggested file name without extension, if the method requires one (e.g. "sleep"). */
   fileName?: string;
+  /**
+   * Offer an EPUB whose cover is the prepared image, for firmware that only shows the
+   * cover of the open book. The user sends the book to the device themselves.
+   */
+  coverEpub?: boolean;
   steps: InstallStep[];
   limitations: InstallStep[];
   sources: Source[];

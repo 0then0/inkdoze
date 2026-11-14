@@ -4,7 +4,7 @@ import type { Device, InstallMethod } from '../src/catalog/types.ts';
 import { validateCatalog } from '../src/catalog/validate.ts';
 import { isMessageKey } from '../src/i18n/index.ts';
 
-const TODAY = '2026-11-10';
+const TODAY = '2026-11-14';
 const validate = (devices: readonly Device[], methods: Record<string, InstallMethod> = INSTALL_METHODS) =>
   validateCatalog(devices, methods, isMessageKey, TODAY);
 

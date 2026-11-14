@@ -15,12 +15,15 @@ interface Props {
   readyCount: number;
   progress: Progress | null;
   message: string | null;
+  /** Offer an EPUB with the image as its cover (install methods that only show book covers). */
+  epub: boolean;
   onOne: () => void;
+  onEpub: () => void;
   onAll: () => void;
   onCancel: () => void;
 }
 
-export function DownloadPanel({ selected, fileName, summary, readyCount, progress, message, onOne, onAll, onCancel }: Props) {
+export function DownloadPanel({ selected, fileName, summary, readyCount, progress, message, epub, onOne, onEpub, onAll, onCancel }: Props) {
   const { t } = useI18n();
   const busy = progress !== null;
   return (
@@ -38,8 +41,26 @@ export function DownloadPanel({ selected, fileName, summary, readyCount, progres
           <Rich k="download.name" params={{ name: fileName }} code={['name']} />
         </p>
       )}
+      {epub && (
+        <div class="download-epub">
+          <button
+            type="button"
+            class="button primary"
+            disabled={busy || selected?.status !== 'ready'}
+            onClick={onEpub}
+            aria-describedby="download-epub-hint"
+            data-testid="download-epub"
+          >
+            <Icon name="download" />
+            {t('download.epub')}
+          </button>
+          <p id="download-epub-hint" class="hint">
+            {t('download.epubHint')}
+          </p>
+        </div>
+      )}
       <div class="download-buttons">
-        <button type="button" class="button primary" disabled={busy || selected?.status !== 'ready'} onClick={onOne} data-testid="download-one">
+        <button type="button" class={epub ? 'button' : 'button primary'} disabled={busy || selected?.status !== 'ready'} onClick={onOne} data-testid="download-one">
           <Icon name="download" />
           {t('download.one')}
         </button>

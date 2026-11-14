@@ -13,6 +13,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Automatic e-ink adjustment, on by default: per-image contrast stretch and midtone curve, colour or grayscale chosen from the e-reader, manual settings folded away. The last selected e-reader is remembered.
 - Grayscale or colour, brightness, contrast, invert, 256/16/4/2 gray levels with Floyd–Steinberg or Atkinson dithering.
 - PNG, JPEG and BMP (24, 8, 4, 2, 1 bit) export; ZIP download for batches; editable file names; per-file settings.
+- EPUB export for Kindle Display Cover: the selected image, rendered as in the image export, becomes the cover of an EPUB 3 book built in the browser, to be sent manually with Send to Kindle. The sleep screen follows the last opened book; not yet verified on a real Kindle.
 - PXC encoder for CrossPoint's 2-bit layout, not exposed until a CrossPoint release reads PXC sleep images.
 - English, Russian, Spanish, German, French, Japanese and Brazilian Portuguese interface.
 - Type checking with TypeScript 7.0; TypeScript 6.0 is kept for typescript-eslint.

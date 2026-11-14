@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import { deviceMethods, getDevice } from '../catalog/index.ts';
 import type { InstallMethod } from '../catalog/types.ts';
+import { EPUB_MIME, createCoverEpub, epubImageFormat } from '../formats/epub.ts';
 import { FORMATS, resolveFormat } from '../formats/registry.ts';
 import { createZip } from '../formats/zip.ts';
 import { I18nContext, LOCALES, LOCALE_NAMES, createTranslator, matchLocale, type Locale } from '../i18n/index.ts';
 import { LIMITS } from '../io/limits.ts';
 import { sanitizeBaseName, stripExtension, uniqueNames } from '../io/names.ts';
-import { TaskQueue, isAbort } from '../io/queue.ts';
+import { AbortedError, TaskQueue, isAbort } from '../io/queue.ts';
 import { rotatedSize } from '../pipeline/geometry.ts';
 import { buildJob } from '../pipeline/job.ts';
 import { DEFAULT_ADJUST, type Adjustments, type NormRect, type RenderJob } from '../pipeline/types.ts';
@@ -352,6 +353,50 @@ export function App() {
     }
   };
 
+  /**
+   * One EPUB whose cover is the selected image, rendered by the same pipeline as the image
+   * export. Everything the result depends on is captured before rendering starts, so changing
+   * the image, settings or e-reader meanwhile cannot mix into the file or its metadata.
+   */
+  const downloadEpub = async () => {
+    const item = selected;
+    if (!client || !item || item.status !== 'ready') return;
+    const s = effectiveSettings(stateRef.current, item);
+    // Tone follows the chosen format, as in the preview (a 2-bit BMP keeps its 4 grays);
+    // only the container encoding switches to PNG or JPEG.
+    const chosen = resolveFormat(s.format, method);
+    const format = epubImageFormat(chosen);
+    const built = buildJob({ width: item.width, height: item.height }, s, item.adjust, device, chosen);
+    if (!built.ok) return setMessage(t('error.outputTooLarge', { max: LIMITS.maxOutputSide }));
+    const base = sanitizeBaseName(item.name);
+    const fileName = `${base}.epub`;
+    const title = item.name.trim() || base;
+    const language = locale;
+    const ctrl = new AbortController();
+    exportAbort.current = ctrl;
+    setMessage(null);
+    setProgress({ done: 0, total: 1 });
+    try {
+      const r = await queue.run((signal) => client.export(item.id, built.job, format, s.jpegQuality, signal), ctrl.signal);
+      const data = new Uint8Array(await r.blob.arrayBuffer());
+      if (ctrl.signal.aborted) throw new AbortedError();
+      const epub = createCoverEpub({
+        title,
+        language,
+        identifier: `urn:uuid:${crypto.randomUUID()}`,
+        modified: new Date(),
+        image: { data, format },
+      });
+      saveBlob(new Blob(epub as BlobPart[], { type: EPUB_MIME }), fileName);
+      setMessage(t('download.done', { name: fileName }));
+    } catch (e) {
+      setMessage(isAbort(e) ? t('download.cancelled') : t('error.render'));
+    } finally {
+      setProgress(null);
+      exportAbort.current = null;
+    }
+  };
+
   const downloadAll = async () => {
     if (!client) return;
     const items = stateRef.current.images.filter((i) => i.status === 'ready');
@@ -510,7 +555,9 @@ export function App() {
             readyCount={readyCount}
             progress={progress}
             message={message}
+            epub={method?.coverEpub === true}
             onOne={downloadOne}
+            onEpub={downloadEpub}
             onAll={downloadAll}
             onCancel={cancelExport}
           />

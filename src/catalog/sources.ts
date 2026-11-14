@@ -102,6 +102,16 @@ export const SRC = {
     title: 'KOReader DocumentRegistry image types',
     url: `https://github.com/koreader/koreader/blob/${KOREADER_COMMIT}/frontend/document/documentregistry.lua`,
   },
+  kindleDisplayCover: {
+    kind: 'manufacturer',
+    title: 'About Amazon: Kindle features, Display Cover under Screen & Brightness',
+    url: 'https://www.aboutamazon.com/news/devices/fun-kindle-features',
+  },
+  kdpCoverImage: {
+    kind: 'manufacturer',
+    title: 'Kindle Direct Publishing: internal cover image in EPUB (cover-image property, meta name="cover")',
+    url: 'https://kdp.amazon.com/en_US/help/topic/G6GTK3T3NUHKLEFX',
+  },
   kindleCoverSetting: {
     kind: 'secondary',
     title: 'The eBook Reader: book cover setting moved after Kindle software update',

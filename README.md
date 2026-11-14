@@ -21,7 +21,7 @@ InkDoze resizes, crops and tones images for the exact screen of your e-reader an
 
 1. Add images: drop PNG, JPEG or WebP files onto the page or choose **Add images**.
 2. Pick your e-reader once. Search by model, generation or resolution, or choose **Custom size**. InkDoze remembers the choice for your next visit.
-3. Download the selected image, or all images as a ZIP.
+3. Download the selected image, or all images as a ZIP. For Kindles that only show book covers, download an EPUB instead (see below).
 
 That is the whole workflow. **Automatic e-ink adjustment** is on by default: for each image it stretches the contrast and lifts the midtones so it reads well on e-ink, picks colour or grayscale to match the screen, fills the screen at its native resolution and uses the format recommended for the e-reader. The line above the download buttons shows what you will get, for example `480 × 800 px · BMP 24-bit colour · Grayscale`.
 
@@ -37,6 +37,7 @@ Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 
 - **Tone.** Automatic per-image adjustment for e-ink (levels stretch with a capped gain and a midtone curve, measured on the visible part of the image only). Manual colour or grayscale, brightness and contrast on top of it, invert, 256/16/4/2 gray levels and Floyd–Steinberg or Atkinson dithering.
 - **Same pipeline for preview and export.** The preview is rendered at full output resolution by the same code that writes the file. The optional e-ink simulation is labelled as an approximation.
 - **Formats.** PNG, JPEG and uncompressed BMP at 24, 8, 4, 2 and 1 bit. The recommended format and file name come from the selected install method.
+- **EPUB for Kindle Display Cover.** For ad-free Kindles on stock firmware, which can only show the cover of a book, **Download EPUB for Kindle** packs the selected image, rendered exactly as the image export, into an EPUB 3 book with that image as its cover. One image per book; batches are not packed into EPUBs.
 - **Batches.** Drag and drop or pick several PNG, JPEG and WebP files, rename outputs, give single images their own settings, download one file or a ZIP of all. Work runs in a Web Worker with bounded concurrency and can be cancelled.
 - **Seven languages.** English, Русский, Español, Deutsch, Français, 日本語 and Português (Brasil).
 - **Mobile and keyboard friendly.** Native controls, visible focus, a sticky download bar on phones.
@@ -67,6 +68,18 @@ Data notes:
 - Kindle Paperwhite (12th generation) and Colorsoft render at **1272 × 1696**. Many spec sheets say 1264 × 1680; device screenshots collected by the Kindle Comic Converter project show the larger grid.
 - Note Air3 (1404 × 1872) and Note Air3 C (1860 × 2480) share a name but not a resolution, as do Paperwhite generations 5 (1236 × 1648) and 6.
 - Current tolino models (2024, built with Kobo) only show the book cover; the "own picture" option belongs to earlier generations.
+
+### Kindle cover EPUB
+
+The EPUB is built in the browser like every other file: InkDoze uploads nothing and never talks to Amazon. To use it:
+
+1. Choose a Kindle model whose install method is the stock-firmware book cover, add an image and select **Download EPUB for Kindle**.
+2. Send the EPUB yourself with [Send to Kindle](https://www.amazon.com/sendtokindle). This uploads the file to your Amazon account, where Amazon converts it.
+3. Open the book on the Kindle and turn on **Display Cover** (Settings › Screen and brightness on current firmware). Kindles with ads show ads instead of covers.
+
+Limits: the sleep screen follows the last book you opened, so after reading another book you have to open this one again. It is a book cover, not an independent permanent screensaver, and images do not rotate. Copying the EPUB over USB does not work, because stock Kindle firmware does not open EPUB files. Availability of Send to Kindle and Display Cover depends on the model, firmware and region.
+
+The book holds a `mimetype` entry stored first, `META-INF/container.xml`, an EPUB 3 package document whose image item has the `cover-image` property, a navigation document, one XHTML page with the image and the PNG or JPEG cover itself, under fixed paths. The legacy `<meta name="cover">` is added as described in Amazon's [KDP cover guidance](https://kdp.amazon.com/en_US/help/topic/G6GTK3T3NUHKLEFX). The output passes EPUBCheck 5.4.0 without errors or warnings. Display Cover has **not** been verified on a real Kindle yet; reports with model and firmware version are welcome.
 
 ### CrossPoint and PXC
 
@@ -121,7 +134,7 @@ The repository deploys itself to GitHub Pages with [`.github/workflows/pages.yml
 ```
 src/catalog/   devices, install methods, sources, validation
 src/pipeline/  geometry, tone and dithering, render job, canvas renderer
-src/formats/   BMP, PXC and ZIP writers, format registry
+src/formats/   BMP, PXC, ZIP and EPUB writers, format registry
 src/io/        header probing, limits, file names, task queue
 src/worker/    render worker and its client
 src/i18n/      translator and locale files
@@ -132,9 +145,9 @@ e2e/           Playwright tests
 
 ### Tests
 
-Unit tests cover catalog validation (duplicates, incomplete records, wrong orientation, unknown methods or message keys), geometry (crop, rotation, placement, clipping), transparency, tone curves, palettes and dithering, BMP and PXC packing and row alignment checked against independent readers, ZIP structure against zlib's CRC-32, header probing, the task queue and locale completeness.
+Unit tests cover catalog validation (duplicates, incomplete records, wrong orientation, unknown methods or message keys), geometry (crop, rotation, placement, clipping), transparency, tone curves, palettes and dithering, BMP and PXC packing and row alignment checked against independent readers, ZIP structure against zlib's CRC-32, EPUB container layout, metadata and escaping, header probing, the task queue and locale completeness.
 
-Playwright runs against the production build served from `/inkdoze/`, as on GitHub Pages. It converts real files end to end, decodes the downloads with the browser's own decoders and checks sizes and control pixels, verifies ZIP contents, per-file settings, error reporting, cancellation, offline use after load, and layout in all seven languages at desktop, tablet and phone widths.
+Playwright runs against the production build served from `/inkdoze/`, as on GitHub Pages. It converts real files end to end, decodes the downloads with the browser's own decoders and checks sizes and control pixels, verifies ZIP contents, the Kindle cover EPUB (parsed with the browser's XML parser, cover identical to the image export, cancellation, errors and changes during export), per-file settings, error reporting, cancellation, offline use after load, and layout in all seven languages at desktop, tablet and phone widths.
 
 ## Contributing
 
