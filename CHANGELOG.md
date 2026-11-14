@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-14
+
 ### Added
 
 - Browser-only converter for e-reader sleep screens: drag and drop or file picker for PNG, JPEG and WebP; per-file errors; limits on file count, file size and decoded pixels.
@@ -19,3 +21,6 @@ All notable changes to this project are documented here. The format follows [Kee
 - Type checking with TypeScript 7.0; TypeScript 6.0 is kept for typescript-eslint.
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
+
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/0then0/inkdoze/releases/tag/v0.1.0
