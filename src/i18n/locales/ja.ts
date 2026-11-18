@@ -8,7 +8,7 @@ export const ja: Messages = {
 
   'files.title': '画像',
   'files.add': '画像を追加',
-  'files.drop': 'PNG・JPEG・WebP ファイルをここにドロップ',
+  'files.drop': 'PNG・JPEG・WebP・HEIC ファイルをここにドロップ',
   'files.dropActive': 'ドロップして画像を追加',
   'files.hint': '最大 {max} ファイル、1 ファイル {size} MB まで',
   'files.empty': '画像がまだありません',
@@ -22,9 +22,11 @@ export const ja: Messages = {
   'files.select': '{name} を選択',
   'files.tooMany': '追加できるのは {max} ファイルまでです。{skipped} 件をスキップしました。',
 
-  'error.unsupported': 'PNG・JPEG・WebP 形式の画像ではありません。',
-  'error.corrupt': 'ファイルのヘッダーが壊れています。',
+  'error.unsupported': 'PNG・JPEG・WebP・HEIC 形式の画像ではありません。',
+  'error.corrupt': 'ファイルが壊れているか、不完全です。',
   'error.decode': 'ブラウザでこの画像をデコードできませんでした。',
+  'error.heicVariant': 'この HEIC/HEIF の形式には対応していません。HEVC の静止画のみ開けます。',
+  'error.heicDecoder': 'HEIC デコーダーを読み込めませんでした。ページを再読み込みしてもう一度お試しください。',
   'error.tooLarge': 'ファイルが {size} MB を超えています。',
   'error.tooManyPixels': '画像サイズは {dims} です。上限は {max} メガピクセルです。',
   'error.render': '処理に失敗しました。',

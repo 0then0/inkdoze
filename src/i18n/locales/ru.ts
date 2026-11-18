@@ -8,7 +8,7 @@ export const ru: Messages = {
 
   'files.title': 'Изображения',
   'files.add': 'Добавить',
-  'files.drop': 'Перетащите сюда файлы PNG, JPEG или WebP',
+  'files.drop': 'Перетащите сюда файлы PNG, JPEG, WebP или HEIC',
   'files.dropActive': 'Отпустите, чтобы добавить',
   'files.hint': 'До {max} файлов, не больше {size} МБ каждый',
   'files.empty': 'Изображений пока нет',
@@ -22,9 +22,11 @@ export const ru: Messages = {
   'files.select': 'Выбрать {name}',
   'files.tooMany': 'Можно добавить не больше {max} файлов. Пропущено: {skipped}.',
 
-  'error.unsupported': 'Это не изображение PNG, JPEG или WebP.',
-  'error.corrupt': 'Заголовок файла повреждён.',
+  'error.unsupported': 'Это не изображение PNG, JPEG, WebP или HEIC.',
+  'error.corrupt': 'Файл повреждён или неполный.',
   'error.decode': 'Браузер не смог декодировать изображение.',
+  'error.heicVariant': 'Этот вариант HEIC/HEIF не поддерживается. Открываются только неподвижные фото в HEVC.',
+  'error.heicDecoder': 'Не удалось загрузить декодер HEIC. Перезагрузите страницу и попробуйте снова.',
   'error.tooLarge': 'Файл больше {size} МБ.',
   'error.tooManyPixels': 'Размер изображения {dims}, допустимо не больше {max} Мп.',
   'error.render': 'Не удалось обработать изображение.',

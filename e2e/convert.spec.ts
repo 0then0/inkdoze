@@ -301,8 +301,8 @@ test.describe('single image', () => {
     ]);
     const items = page.locator('.file-item');
     await expect(items).toHaveCount(3);
-    await expect(items.nth(0)).toContainText('Not a PNG, JPEG or WebP image.');
-    await expect(items.nth(1)).toContainText(/could not decode|header is damaged/);
+    await expect(items.nth(0)).toContainText('Not a PNG, JPEG, WebP or HEIC image.');
+    await expect(items.nth(1)).toContainText(/could not decode|damaged or incomplete/);
     await expect(items.nth(2)).toHaveAttribute('data-status', 'ready');
     await expect(items.nth(2).locator('.file-error')).toHaveCount(0);
   });

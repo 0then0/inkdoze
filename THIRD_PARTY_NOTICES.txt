@@ -1,0 +1,57 @@
+InkDoze third-party notices
+===========================
+
+InkDoze itself is licensed under the Apache License 2.0 (see LICENSE).
+
+The production build ships the following third-party code in a separate file,
+assets/libheif-bundle-*.js, which is loaded only when the browser cannot decode
+a HEIC photo itself. That file is libheif-bundle.mjs from the npm package
+libheif-js, minified by the bundler but otherwise unchanged; the WebAssembly
+binary inside it is byte for byte the published one. It is a separate module
+and can be replaced with another build of the same library.
+
+libheif-js 1.23.5
+  https://github.com/catdad-experiments/libheif-js
+  License: GNU Lesser General Public License v3.0
+
+  Contains, compiled to WebAssembly with Emscripten:
+
+  libheif 1.23
+    https://github.com/strukturag/libheif
+    License: GNU Lesser General Public License v3.0
+    Full text: licenses/libheif.txt (LGPL-3.0 and the GPL-3.0 it refers to)
+
+  libde265 1.0.15 (HEVC decoder)
+    https://github.com/strukturag/libde265
+    License: GNU Lesser General Public License v3.0 (same text as above)
+
+  dav1d (AV1 decoder; included in the build, not used by InkDoze)
+    https://code.videolan.org/videolan/dav1d
+    License: BSD 2-Clause
+
+    Copyright © 2018-2019, VideoLAN and dav1d authors
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+       list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright notice,
+       this list of conditions and the following disclaimer in the documentation
+       and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+    ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Preact (MIT License, https://preactjs.com) is bundled in the main application
+script.

@@ -16,7 +16,8 @@ interface Props {
   notice: string | null;
 }
 
-export const ACCEPT = 'image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp';
+// HEIC is listed by type and extension so pickers offer iPhone photos as they are.
+export const ACCEPT = 'image/png,image/jpeg,image/webp,image/heic,image/heif,.png,.jpg,.jpeg,.webp,.heic,.heif';
 
 export function FilePicker({ onAdd, label, primary }: { onAdd: (files: File[]) => void; label: string; primary?: boolean }) {
   const input = useRef<HTMLInputElement>(null);
@@ -73,7 +74,7 @@ export function FilesPanel({ images, selectedId, extension, dispatch, onAdd, onR
           {images.map((item) => {
             const selected = item.id === selectedId;
             return (
-              <li key={item.id} class={`file-item${selected ? ' selected' : ''}${item.status === 'error' ? ' has-error' : ''}`} data-status={item.status}>
+              <li key={item.id} class={`file-item${selected ? ' selected' : ''}${item.status === 'error' ? ' has-error' : ''}`} data-status={item.status} data-decoder={item.decoder}>
                 <button
                   type="button"
                   class="thumb"

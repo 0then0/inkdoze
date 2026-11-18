@@ -19,7 +19,7 @@ InkDoze resizes, crops and tones images for the exact screen of your e-reader an
 
 ## How to use
 
-1. Add images: drop PNG, JPEG or WebP files onto the page or choose **Add images**.
+1. Add images: drop PNG, JPEG, WebP or HEIC files onto the page or choose **Add images**. HEIC photos can be added as they are.
 2. Pick your e-reader once. Search by model, generation or resolution, or choose **Custom size**. InkDoze remembers the choice for your next visit.
 3. Download the selected image, or all images as a ZIP. For Kindles that only show book covers, download an EPUB instead (see below).
 
@@ -38,7 +38,8 @@ Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 
 - **Same pipeline for preview and export.** The preview is rendered at full output resolution by the same code that writes the file. The optional e-ink simulation is labelled as an approximation.
 - **Formats.** PNG, JPEG and uncompressed BMP at 24, 8, 4, 2 and 1 bit. The recommended format and file name come from the selected install method.
 - **EPUB for Kindle Display Cover.** For ad-free Kindles on stock firmware, which can only show the cover of a book, **Download EPUB for Kindle** packs the selected image, rendered exactly as the image export, into an EPUB 3 book with that image as its cover. One image per book; batches are not packed into EPUBs.
-- **Batches.** Drag and drop or pick several PNG, JPEG and WebP files, rename outputs, give single images their own settings, download one file or a ZIP of all. Work runs in a Web Worker with bounded concurrency and can be cancelled.
+- **HEIC photos.** Still HEIC photos in the layout iPhones write are decoded on the device: by the browser where it can (Safari), otherwise by a WebAssembly build of libheif that ships with InkDoze. See [HEIC photos](#heic-photos).
+- **Batches.** Drag and drop or pick several PNG, JPEG, WebP and HEIC files, rename outputs, give single images their own settings, download one file or a ZIP of all. Work runs in a Web Worker with bounded concurrency and can be cancelled.
 - **Seven languages.** English, Русский, Español, Deutsch, Français, 日本語 and Português (Brasil).
 - **Mobile and keyboard friendly.** Native controls, visible focus, a sticky download bar on phones.
 
@@ -87,9 +88,21 @@ CrossPoint 2.0.0 ships builds for Xteink X3/X4, X4 Classic, X4 Pro and BOOX Picc
 
 PXC sleep images are only implemented in an [unmerged pull request](https://github.com/crosspoint-reader/crosspoint-reader/pull/1614); released firmware uses the `.pxc` layout only as an internal cache. InkDoze contains a tested PXC encoder for that layout, but does not offer it for any device until a release reads PXC sleep images.
 
+## HEIC photos
+
+Files are recognised by their content, not by name or MIME type, so photos with no extension or an empty type work too. Before anything is decoded, InkDoze reads the HEIF container and checks the file size and the size of the primary image; for tiled (grid) images, as iPhones write them, every tile counts towards the 40 megapixel limit. Damaged containers and images whose size cannot be determined are rejected at that point, and the decoded image is checked again.
+
+- **Supported:** still HEIC images whose primary image is HEVC-coded, either as one image or as a grid of tiles. Rotation and mirroring stored in the container (`irot`, `imir`) are applied once; the EXIF orientation copy is not applied on top.
+- **Not supported:** image sequences (HEICS), AVIF, other codecs inside HEIF (JPEG, uncompressed), derived identity and overlay images. Only the primary image is used: depth maps, HDR gain maps, thumbnails and other auxiliary images are ignored. Each case is reported next to the file with its own message.
+- **Decoding path:** the worker first decodes a small built-in HEIC sample with `createImageBitmap` and checks its size and orientation. If that works, the browser decodes the photos; if the browser then rejects a particular photo, the WebAssembly decoder gets one try. Otherwise the photos go to the WebAssembly decoder: libheif 1.23 with libde265, from the [`libheif-js`](https://github.com/catdad-experiments/libheif-js) package. It runs in its own worker, one photo at a time, and is loaded from the app's own files the first time it is needed (about 2 MB, 0.7 MB compressed, with the WebAssembly binary embedded, so no other request is made). PNG, JPEG, WebP and natively decoded HEIC never load it. The decoder worker stops after a minute without work, or at once when the photo it is decoding is removed, which also returns its memory.
+- **Colour:** the WebAssembly path converts to RGB without applying the embedded ICC profile, so Display P3 photos look slightly less saturated than in the browser's own decoder. For grayscale e-ink output the difference is negligible.
+- **Output:** the HEIC file and its metadata (EXIF, XMP) are never copied into exported images.
+
+Checked so far: Safari 27.2 on macOS 15.7 (by hand) and Playwright's WebKit build decode HEIC natively; Playwright's Chromium and Firefox builds use the WebAssembly decoder. A real 4000 × 3000 camera photo (48-tile grid) converts in all of them; at original size both paths give the same image with a largest channel difference of 9 of 255, and the same holds for a portrait photo with stored rotation. The automated tests use synthetic photos written by Apple's ImageIO in the iPhone layout (`scripts/make-heic-fixtures.swift`). iOS and original iPhone photos have not been verified yet.
+
 ## Browser support
 
-InkDoze needs `OffscreenCanvas`, module Web Workers and `createImageBitmap`, which current versions of Chrome, Edge, Firefox and Safari provide. The automated tests run in Chromium (desktop and Android emulation); other browsers are not tested in CI.
+InkDoze needs `OffscreenCanvas`, module Web Workers and `createImageBitmap`, which current versions of Chrome, Edge, Firefox and Safari provide. The automated tests run in Chromium (desktop and Android emulation); HEIC import is also tested in Firefox and WebKit.
 
 ## Run locally
 
@@ -121,7 +134,7 @@ npm run build && npm run preview
 | `npm run test:e2e`      | Playwright tests against the production build    |
 | `npm run check`         | Everything except Playwright                     |
 
-Install the Playwright browser once with `npx playwright install chromium`.
+Install the Playwright browsers once with `npx playwright install chromium firefox webkit`.
 
 ## Hosting
 
@@ -135,8 +148,8 @@ The repository deploys itself to GitHub Pages with [`.github/workflows/pages.yml
 src/catalog/   devices, install methods, sources, validation
 src/pipeline/  geometry, tone and dithering, render job, canvas renderer
 src/formats/   BMP, PXC, ZIP and EPUB writers, format registry
-src/io/        header probing, limits, file names, task queue
-src/worker/    render worker and its client
+src/io/        header and HEIF container probing, limits, file names, task queue
+src/worker/    render worker, HEIC decoding and its worker, client
 src/i18n/      translator and locale files
 src/ui/        Preact components
 tests/         unit tests
@@ -145,9 +158,9 @@ e2e/           Playwright tests
 
 ### Tests
 
-Unit tests cover catalog validation (duplicates, incomplete records, wrong orientation, unknown methods or message keys), geometry (crop, rotation, placement, clipping), transparency, tone curves, palettes and dithering, BMP and PXC packing and row alignment checked against independent readers, ZIP structure against zlib's CRC-32, EPUB container layout, metadata and escaping, header probing, the task queue and locale completeness.
+Unit tests cover catalog validation (duplicates, incomplete records, wrong orientation, unknown methods or message keys), geometry (crop, rotation, placement, clipping), transparency, tone curves, palettes and dithering, BMP and PXC packing and row alignment checked against independent readers, ZIP structure against zlib's CRC-32, EPUB container layout, metadata and escaping, header probing, HEIF container parsing (HEIC versus AVIF and other ISO BMFF files, grids, damaged boxes), the task queue and locale completeness.
 
-Playwright runs against the production build served from `/inkdoze/`, as on GitHub Pages. It converts real files end to end, decodes the downloads with the browser's own decoders and checks sizes and control pixels, verifies ZIP contents, the Kindle cover EPUB (parsed with the browser's XML parser, cover identical to the image export, cancellation, errors and changes during export), per-file settings, error reporting, cancellation, offline use after load, and layout in all seven languages at desktop, tablet and phone widths.
+Playwright runs against the production build served from `/inkdoze/`, as on GitHub Pages. It converts real files end to end, decodes the downloads with the browser's own decoders and checks sizes and control pixels, verifies ZIP contents, the Kindle cover EPUB (parsed with the browser's XML parser, cover identical to the image export, cancellation, errors and changes during export), per-file settings, error reporting, cancellation, offline use after load, HEIC import in Chromium, Firefox and WebKit (orientation in the list, preview and export, empty MIME type, mixed batches, damaged files, oversized grids, an unavailable decoder, removal during decoding, which files are loaded and when), and layout in all seven languages at desktop, tablet and phone widths.
 
 ## Contributing
 
@@ -156,3 +169,5 @@ Corrections to the catalog are the most valuable contribution. See [CONTRIBUTING
 ## License
 
 [Apache License 2.0](LICENSE)
+
+The HEIC decoder used as a fallback is [libheif-js](https://github.com/catdad-experiments/libheif-js) (libheif and libde265, LGPL-3.0; it also contains the BSD-licensed dav1d). It is built into a separate file that is loaded only when needed and can be replaced. The build includes the license texts under `licenses/`; see [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).

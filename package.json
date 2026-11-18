@@ -29,6 +29,7 @@
     "check": "npm run catalog:check && npm run typecheck && npm run lint && npm run test && npm run build"
   },
   "dependencies": {
+    "libheif-js": "^1.23.5",
     "preact": "^11.2.0"
   },
   "devDependencies": {

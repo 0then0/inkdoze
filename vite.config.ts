@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig, type Plugin } from 'vite';
 
 // Production builds ship a strict Content-Security-Policy: the app may only load
@@ -29,9 +30,27 @@ function cspPlugin(): Plugin {
   };
 }
 
+// The HEIC decoder chunk is LGPL-licensed libheif: ship its license text and the
+// third-party notices next to the app.
+function licensesPlugin(): Plugin {
+  return {
+    name: 'inkdoze-licenses',
+    apply: 'build',
+    generateBundle() {
+      const files = {
+        'licenses/libheif.txt': 'node_modules/libheif-js/libheif-wasm/LICENSE',
+        'licenses/third-party.txt': 'THIRD_PARTY_NOTICES.txt',
+      };
+      for (const [fileName, source] of Object.entries(files)) {
+        this.emitFile({ type: 'asset', fileName, source: readFileSync(new URL(source, import.meta.url)) });
+      }
+    },
+  };
+}
+
 export default defineConfig({
   base: './',
-  plugins: [cspPlugin()],
+  plugins: [cspPlugin(), licensesPlugin()],
   oxc: {
     jsx: { runtime: 'automatic', importSource: 'preact' },
   },

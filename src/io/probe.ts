@@ -1,18 +1,25 @@
 /**
  * Read image dimensions from the file header without decoding pixels, so oversized
- * images are rejected before the browser allocates memory for them.
+ * images are rejected before the browser allocates memory for them. Formats are
+ * recognised by content; the file name and MIME type are not used.
  */
+import { isIsoBmff, probeHeif, type HeicInfo } from './heif.ts';
 
-export type ImageKind = 'png' | 'jpeg' | 'webp';
+export type ImageKind = 'png' | 'jpeg' | 'webp' | 'heic';
 
 export interface ProbeResult {
   kind: ImageKind;
   width: number;
   height: number;
+  /** HEIC only: container details used to check limits and the decoded result. */
+  heic?: Omit<HeicInfo, 'kind' | 'width' | 'height'>;
 }
 
-/** `truncated`: the header continues past the bytes provided; read more of the file. */
-export type ProbeError = 'unsupported' | 'corrupt' | 'truncated';
+/**
+ * `truncated`: the header continues past the bytes provided; read more of the file.
+ * `heicVariant`: a HEIF file that is not a supported HEIC still image (sequence, other codec).
+ */
+export type ProbeError = 'unsupported' | 'corrupt' | 'truncated' | 'heicVariant';
 
 const u16be = (b: Uint8Array, o: number) => (b[o]! << 8) | b[o + 1]!;
 const u32be = (b: Uint8Array, o: number) => ((b[o]! << 24) | (b[o + 1]! << 16) | (b[o + 2]! << 8) | b[o + 3]!) >>> 0;
@@ -91,15 +98,24 @@ export function probeImage(bytes: Uint8Array): ProbeResult | ProbeError {
   return r;
 }
 
+async function probeHeifBlob(blob: Blob): Promise<ProbeResult | 'unsupported' | 'corrupt' | 'heicVariant'> {
+  const r = await probeHeif(async (offset, length) => new Uint8Array(await blob.slice(offset, offset + length).arrayBuffer()), blob.size);
+  if (r === 'variant') return 'heicVariant';
+  if (typeof r === 'string') return r;
+  const { kind, width, height, ...heic } = r;
+  return { kind, width, height, heic };
+}
+
 /**
  * Probe a file, reading a growing prefix (64 KiB, 1 MiB, then the whole file) until
  * the header is found. A header that is still incomplete at the end of the file is
- * reported as corrupt.
+ * reported as corrupt. ISO BMFF files (HEIC) are read box by box instead.
  */
 export async function probeBlob(blob: Blob): Promise<ProbeResult | Exclude<ProbeError, 'truncated'>> {
   let size = 64 * 1024;
   for (;;) {
     const bytes = new Uint8Array(await blob.slice(0, size).arrayBuffer());
+    if (isIsoBmff(bytes)) return probeHeifBlob(blob);
     const r = probeImage(bytes);
     if (r !== 'truncated') return r;
     if (size >= blob.size) return 'corrupt';

@@ -13,4 +13,15 @@ export const LIMITS = {
   maxOutputPixels: 33_554_432,
   /** Concurrent decode/encode jobs. */
   concurrency: 2,
+  /** Idle time after which the WebAssembly HEIC decoder is shut down to return its memory. */
+  heicDecoderIdleMs: 60_000,
 } as const;
+
+/** True when an input image is above the pixel or side limits. `decodePixels` covers tiled HEIC grids. */
+export function overInputLimits(width: number, height: number, decodePixels = width * height): boolean {
+  return (
+    width * height > LIMITS.maxInputPixels ||
+    decodePixels > LIMITS.maxInputPixels ||
+    Math.max(width, height) > LIMITS.maxInputSide
+  );
+}

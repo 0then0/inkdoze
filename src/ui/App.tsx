@@ -64,6 +64,10 @@ function errorFor(e: unknown): ImageItem['error'] {
         return { key: 'error.tooManyPixels', params: { dims: e.detail ?? '', max: LIMITS.maxInputPixels / 1e6 } };
       case 'decode':
         return { key: 'error.decode' };
+      case 'heicVariant':
+        return { key: 'error.heicVariant' };
+      case 'wasmUnavailable':
+        return { key: 'error.heicDecoder' };
     }
   }
   return { key: 'error.render' };
@@ -167,7 +171,13 @@ export function App() {
             dispatch({
               type: 'updateImage',
               id: item.id,
-              patch: { status: 'ready', width: r.width, height: r.height, thumbUrl: URL.createObjectURL(r.thumbnail) },
+              patch: {
+                status: 'ready',
+                width: r.width,
+                height: r.height,
+                thumbUrl: URL.createObjectURL(r.thumbnail),
+                ...(r.decoder ? { decoder: r.decoder } : {}),
+              },
             });
           })
           .catch((e: unknown) => {

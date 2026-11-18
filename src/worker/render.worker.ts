@@ -1,8 +1,9 @@
 /// <reference lib="webworker" />
-import { LIMITS } from '../io/limits.ts';
+import { overInputLimits } from '../io/limits.ts';
 import { probeBlob } from '../io/probe.ts';
 import { encodeRendered, renderPixels } from '../pipeline/render.ts';
-import type { WorkerRequest, WorkerResponse } from './protocol.ts';
+import { LoadFailure, cancelHeic, decodeHeic } from './heic.ts';
+import type { HeicDecoder, WorkerRequest, WorkerResponse } from './protocol.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -37,19 +38,26 @@ async function load(req: Extract<WorkerRequest, { type: 'load' }>) {
   loading.add(req.imageId);
   try {
     const probe = await probeBlob(req.file);
-    if (probe === 'unsupported' || probe === 'corrupt') {
+    if (typeof probe === 'string') {
       post({ type: 'error', reqId: req.reqId, code: probe });
       return;
     }
-    if (probe.width * probe.height > LIMITS.maxInputPixels || Math.max(probe.width, probe.height) > LIMITS.maxInputSide) {
+    // Limits are checked on the container before any decoder allocates memory.
+    if (overInputLimits(probe.width, probe.height, probe.heic?.decodePixels)) {
       post({ type: 'error', reqId: req.reqId, code: 'tooManyPixels', detail: `${probe.width}x${probe.height}` });
       return;
     }
     let bitmap: ImageBitmap;
+    let decoder: HeicDecoder | undefined;
     try {
-      bitmap = await createImageBitmap(req.file, { imageOrientation: 'from-image', premultiplyAlpha: 'none' });
+      if (probe.kind === 'heic') {
+        ({ bitmap, decoder } = await decodeHeic(req.imageId, req.file, probe, () => releasedWhileLoading.has(req.imageId)));
+      } else {
+        bitmap = await createImageBitmap(req.file, { imageOrientation: 'from-image', premultiplyAlpha: 'none' });
+      }
     } catch (e) {
-      post({ type: 'error', reqId: req.reqId, code: 'decode', detail: String(e) });
+      if (e instanceof LoadFailure) post({ type: 'error', reqId: req.reqId, code: e.code, ...(e.detail ? { detail: e.detail } : {}) });
+      else post({ type: 'error', reqId: req.reqId, code: 'decode', detail: String(e) });
       return;
     }
     if (releasedWhileLoading.has(req.imageId)) {
@@ -58,7 +66,7 @@ async function load(req: Extract<WorkerRequest, { type: 'load' }>) {
       post({ type: 'error', reqId: req.reqId, code: 'missing' });
       return;
     }
-    if (bitmap.width * bitmap.height > LIMITS.maxInputPixels) {
+    if (overInputLimits(bitmap.width, bitmap.height)) {
       bitmap.close();
       post({ type: 'error', reqId: req.reqId, code: 'tooManyPixels', detail: `${bitmap.width}x${bitmap.height}` });
       return;
@@ -66,7 +74,7 @@ async function load(req: Extract<WorkerRequest, { type: 'load' }>) {
     images.get(req.imageId)?.bitmap.close();
     images.set(req.imageId, { bitmap, width: bitmap.width, height: bitmap.height });
     const thumb = await thumbnail(bitmap);
-    post({ type: 'loaded', reqId: req.reqId, width: bitmap.width, height: bitmap.height, thumbnail: thumb });
+    post({ type: 'loaded', reqId: req.reqId, width: bitmap.width, height: bitmap.height, thumbnail: thumb, ...(decoder ? { decoder } : {}) });
   } finally {
     loading.delete(req.imageId);
     releasedWhileLoading.delete(req.imageId);
@@ -78,7 +86,10 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
     if (req.type === 'load') return await load(req);
     if (req.type === 'release') {
-      if (loading.has(req.imageId)) releasedWhileLoading.add(req.imageId);
+      if (loading.has(req.imageId)) {
+        releasedWhileLoading.add(req.imageId);
+        cancelHeic(req.imageId);
+      }
       images.get(req.imageId)?.bitmap.close();
       images.delete(req.imageId);
       return post({ type: 'released', reqId: req.reqId });

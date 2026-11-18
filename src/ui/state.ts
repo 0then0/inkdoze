@@ -1,6 +1,7 @@
 import type { Brand } from '../catalog/types.ts';
 import { DEFAULT_ADJUST, DEFAULT_SETTINGS, type Adjustments, type OutputSettings } from '../pipeline/types.ts';
 import type { TextKey } from '../i18n/keys.ts';
+import type { HeicDecoder } from '../worker/protocol.ts';
 
 export type FileStatus = 'loading' | 'ready' | 'error';
 
@@ -14,6 +15,8 @@ export interface ImageItem {
   width: number;
   height: number;
   thumbUrl?: string;
+  /** HEIC only: which decoder produced the pixels. */
+  decoder?: HeicDecoder;
   overrides: Partial<OutputSettings>;
   adjust: Adjustments;
 }

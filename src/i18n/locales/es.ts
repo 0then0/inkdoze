@@ -8,7 +8,7 @@ export const es: Messages = {
 
   'files.title': 'Imágenes',
   'files.add': 'Añadir imágenes',
-  'files.drop': 'Suelta aquí archivos PNG, JPEG o WebP',
+  'files.drop': 'Suelta aquí archivos PNG, JPEG, WebP o HEIC',
   'files.dropActive': 'Suelta para añadir las imágenes',
   'files.hint': 'Hasta {max} archivos de {size} MB como máximo',
   'files.empty': 'Todavía no hay imágenes',
@@ -22,9 +22,11 @@ export const es: Messages = {
   'files.select': 'Seleccionar {name}',
   'files.tooMany': 'Solo se pueden añadir {max} archivos. Se omitieron {skipped}.',
 
-  'error.unsupported': 'No es una imagen PNG, JPEG ni WebP.',
-  'error.corrupt': 'La cabecera del archivo está dañada.',
+  'error.unsupported': 'No es una imagen PNG, JPEG, WebP ni HEIC.',
+  'error.corrupt': 'El archivo está dañado o incompleto.',
   'error.decode': 'El navegador no pudo decodificar esta imagen.',
+  'error.heicVariant': 'Esta variante de HEIC/HEIF no es compatible. Solo se abren fotos fijas en HEVC.',
+  'error.heicDecoder': 'No se pudo cargar el decodificador HEIC. Recarga la página e inténtalo de nuevo.',
   'error.tooLarge': 'El archivo supera los {size} MB.',
   'error.tooManyPixels': 'La imagen mide {dims}; el límite es de {max} megapíxeles.',
   'error.render': 'No se pudo procesar la imagen.',

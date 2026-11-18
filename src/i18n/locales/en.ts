@@ -12,7 +12,7 @@ export const en = {
 
   'files.title': 'Images',
   'files.add': 'Add images',
-  'files.drop': 'Drop PNG, JPEG or WebP files here',
+  'files.drop': 'Drop PNG, JPEG, WebP or HEIC files here',
   'files.dropActive': 'Release to add images',
   'files.hint': 'Up to {max} files, {size} MB each',
   'files.empty': 'No images yet',
@@ -26,9 +26,11 @@ export const en = {
   'files.select': 'Select {name}',
   'files.tooMany': 'Only {max} files can be added. {skipped} skipped.',
 
-  'error.unsupported': 'Not a PNG, JPEG or WebP image.',
-  'error.corrupt': 'The file header is damaged.',
+  'error.unsupported': 'Not a PNG, JPEG, WebP or HEIC image.',
+  'error.corrupt': 'The file is damaged or incomplete.',
   'error.decode': 'The browser could not decode this image.',
+  'error.heicVariant': 'This HEIC/HEIF variant is not supported. Only still HEVC photos can be opened.',
+  'error.heicDecoder': 'The HEIC decoder could not be loaded. Reload the page and try again.',
   'error.tooLarge': 'File is larger than {size} MB.',
   'error.tooManyPixels': 'Image is {dims}; the limit is {max} megapixels.',
   'error.render': 'Rendering failed.',
