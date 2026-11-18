@@ -118,8 +118,12 @@ test('iPhone-layout portrait HEIC: upright in the list, preview and sleep screen
     [at(0.42, 0.5), BLACK], // stem of the F
     [at(0.58, 0.44), GREEN], // open side of the F: black only if mirrored
   ];
-  const preview = await previewAt(page, probes.map(([[x, y]]) => [x / 480, y / 800]));
-  probes.forEach(([, color], i) => expectColor(preview[i]!, color, 24));
+  // The preview size does not change when switching to colour, so retry until the
+  // re-rendered colour preview is on the canvas.
+  await expect(async () => {
+    const preview = await previewAt(page, probes.map(([[x, y]]) => [x / 480, y / 800]));
+    probes.forEach(([, color], i) => expectColor(preview[i]!, color, 24));
+  }).toPass({ timeout: 20_000 });
 
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('download-one').click()]);
   expect(download.suggestedFilename()).toBe('IMG_0001.png');
