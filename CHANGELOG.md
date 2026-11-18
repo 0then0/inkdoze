@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-18
+
 ### Added
 
 - HEIC import for still photos in the iPhone layout (tiled HEVC grid with stored rotation; verified with samples written by Apple's ImageIO and a real camera photo in Safari, Chrome and Firefox engines; not yet with iPhone originals or on iOS): files are recognised by content, the HEIF container is checked for damage and size (all tiles of a grid count towards the pixel limit) before decoding, and the image is checked again afterwards. Browsers that decode HEIC themselves, as verified with a built-in sample in the render worker, are used first; otherwise a WebAssembly build of libheif (libheif-js 1.23.5, LGPL-3.0) decodes the photo in its own worker, loaded from the app's files on first use. Container orientation is applied once, metadata is not exported. Sequences, AVIF, other HEIF codings and auxiliary images (depth, gain maps) are not supported and are reported per file.
@@ -33,5 +35,6 @@ All notable changes to this project are documented here. The format follows [Kee
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
 
-[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/0then0/inkdoze/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/0then0/inkdoze/releases/tag/v0.1.0
