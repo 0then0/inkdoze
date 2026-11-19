@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-19
+
 ### Added
 
 - CrossPoint 2.0.0 sleep overlay mode with a reading-page preview and single-image `sleep-overlay.png` export. The PNG preserves transparency and uses the selected reader’s screen size. The installation guide covers both overlay modes and BMP file priority.
@@ -39,6 +41,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
 
-[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/0then0/inkdoze/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/0then0/inkdoze/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/0then0/inkdoze/releases/tag/v0.1.0
