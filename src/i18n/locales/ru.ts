@@ -78,6 +78,8 @@ export const ru: Messages = {
   'install.sourceKind.community': 'Сообщество',
   'install.sourceKind.secondary': 'Вторичный',
 
+  'install.crosspointOverlay.copy': 'Скопируйте {file} в корень SD-карты.',
+  'install.crosspointOverlay.mode': 'В {firmware} откройте {menu}. Выберите {page} для текущего экрана или {cover} для обложки книги.',
   'install.crosspoint.mode': 'На читалке откройте {menu}.',
   'install.crosspoint.single': 'Скопируйте файл в корень SD-карты под именем {file}. Он важнее папок.',
   'install.crosspoint.multiple': 'Чтобы при каждом засыпании показывалась случайная картинка, положите несколько файлов .bmp в {dir} (или {legacy}).',
@@ -126,6 +128,7 @@ export const ru: Messages = {
   'install.remarkable.copy': 'Замените {file} своим PNG.',
   'install.remarkable.restart': 'Выполните {command} или перезагрузите планшет.',
 
+  'limit.crosspointOverlay.bmpPriority': 'Если в корне SD-карты есть {file}, CrossPoint сначала попробует загрузить его.',
   'limit.crosspoint.bmpOnly': 'Для своих экранов сна читается только несжатый BMP размером до {max} пикселей.',
   'limit.crosspoint.firstSleep': 'Первое засыпание с новым изображением длится дольше: прошивка его конвертирует.',
   'limit.crosspoint.noPxc': 'Экраны сна в формате PXC есть только в непринятом pull request, ни в одном релизе CrossPoint их нет.',
@@ -273,6 +276,7 @@ export const ru: Messages = {
 
   'device.ordinal': { other: '{n}-е поколение' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'Оверлей экрана сна CrossPoint',
   'method.xteink-stock-official': 'Штатная прошивка Xteink',
   'method.xteink-stock-community': 'Штатная прошивка Xteink',
   'method.boox-screensaver': 'Прошивка BOOX',
@@ -289,4 +293,16 @@ export const ru: Messages = {
   'method.nook-screensavers': 'Прошивка NOOK',
   'method.supernote-screensaver': 'Прошивка Supernote',
   'method.remarkable-ssh': 'reMarkable OS через SSH',
+
+  'overlay.transparent': 'Прозрачный фон',
+  'overlay.mode': 'Режим экспорта',
+  'overlay.standard': 'Обычный экран сна',
+  'overlay.standardHint': 'Прозрачные пиксели и свободные поля заполняются выбранным цветом фона.',
+  'overlay.backgroundHint': 'PNG сохраняет альфа-канал изображения и оставляет свободные поля прозрачными. Размер файла в пикселях совпадает с разрешением экрана читалки.',
+  'overlay.previewNote': 'Браузер показывает PNG поверх тестовой страницы. CrossPoint 2.0.0 переводит цвета в оттенки серого и передаёт частичную прозрачность узором из пикселей 4 × 4.',
+  'overlay.download': 'Скачать оверлей',
+  'overlay.sampleTitle': 'Тихое утро',
+  'overlay.sampleText': 'Комната постепенно наполнялась светом. За окном по площади проехал первый трамвай. Она поставила чашку на стол, перевернула страницу и продолжила читать.',
+  'overlay.fitHelp.fit': 'Изображение целиком помещается на экране. Свободные поля остаются прозрачными.',
+  'overlay.fitHelp.fill': 'Изображение масштабируется и обрезается по краям экрана с сохранением прозрачности.',
 };

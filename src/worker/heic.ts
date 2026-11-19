@@ -60,11 +60,11 @@ export function nativeHeicWorks(): Promise<boolean> {
 }
 
 /** Decode with the browser. Returns null when it rejects the photo or gets its size wrong. */
-async function decodeNative(file: Blob, expected: { width: number; height: number }): Promise<ImageBitmap | null> {
+async function decodeNative(file: Blob, expected: { width: number; height: number }, premultiplyAlpha: 'none' | 'premultiply'): Promise<ImageBitmap | null> {
   let bitmap: ImageBitmap;
   try {
     // Give the decoder the type the sample was tested with; user files often have none.
-    bitmap = await createImageBitmap(new Blob([file], { type: 'image/heic' }), BITMAP_OPTIONS);
+    bitmap = await createImageBitmap(new Blob([file], { type: 'image/heic' }), { ...BITMAP_OPTIONS, premultiplyAlpha });
   } catch {
     return null;
   }
@@ -185,14 +185,15 @@ export async function decodeHeic(
   file: Blob,
   expected: { width: number; height: number },
   isReleased: () => boolean,
+  premultiplyAlpha: 'none' | 'premultiply' = 'none',
 ): Promise<{ bitmap: ImageBitmap; decoder: HeicDecoder }> {
   if (await nativeHeicWorks()) {
-    const bitmap = await decodeNative(file, expected);
+    const bitmap = await decodeNative(file, expected, premultiplyAlpha);
     if (bitmap) return { bitmap, decoder: 'native' };
   }
   if (isReleased()) throw new LoadFailure('missing');
   const r = await wasm.decode(imageId, file);
   const pixels = new ImageData(new Uint8ClampedArray(r.data), r.width, r.height);
-  const bitmap = await createImageBitmap(pixels, { premultiplyAlpha: 'none' });
+  const bitmap = await createImageBitmap(pixels, { premultiplyAlpha });
   return { bitmap, decoder: 'wasm' };
 }

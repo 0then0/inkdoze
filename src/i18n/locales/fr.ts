@@ -78,6 +78,8 @@ export const fr: Messages = {
   'install.sourceKind.community': 'Communauté',
   'install.sourceKind.secondary': 'Secondaire',
 
+  'install.crosspointOverlay.copy': 'Copiez {file} à la racine de la carte SD.',
+  'install.crosspointOverlay.mode': 'Dans {firmware}, ouvrez {menu}. Choisissez {page} pour l’écran actuel ou {cover} pour la couverture du livre.',
   'install.crosspoint.mode': 'Sur la liseuse, ouvrez {menu}.',
   'install.crosspoint.single': 'Copiez le fichier à la racine de la carte SD sous le nom {file}. Il est prioritaire sur les dossiers.',
   'install.crosspoint.multiple': 'Pour une image aléatoire à chaque mise en veille, placez plusieurs fichiers .bmp dans {dir} (ou {legacy}).',
@@ -126,6 +128,7 @@ export const fr: Messages = {
   'install.remarkable.copy': 'Remplacez {file} par votre PNG.',
   'install.remarkable.restart': 'Lancez {command} ou redémarrez la tablette.',
 
+  'limit.crosspointOverlay.bmpPriority': 'Si {file} se trouve à la racine de la carte SD, CrossPoint tente de le charger avant le PNG.',
   'limit.crosspoint.bmpOnly': 'Seuls les BMP non compressés jusqu’à {max} pixels sont lus pour les écrans de veille personnalisés.',
   'limit.crosspoint.firstSleep': 'La première mise en veille avec une nouvelle image est plus longue, le temps que le firmware la convertisse.',
   'limit.crosspoint.noPxc': 'Les écrans de veille PXC n’existent que dans une pull request non fusionnée, dans aucune version de CrossPoint.',
@@ -268,6 +271,7 @@ export const fr: Messages = {
 
   'device.ordinal': { one: '{n}re génération', other: '{n}e génération' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'Superposition de veille CrossPoint',
   'method.xteink-stock-official': 'Firmware d’origine Xteink',
   'method.xteink-stock-community': 'Firmware d’origine Xteink',
   'method.boox-screensaver': 'Firmware BOOX',
@@ -284,4 +288,16 @@ export const fr: Messages = {
   'method.nook-screensavers': 'Firmware NOOK',
   'method.supernote-screensaver': 'Firmware Supernote',
   'method.remarkable-ssh': 'reMarkable OS via SSH',
+
+  'overlay.transparent': 'Fond transparent',
+  'overlay.mode': 'Mode d’exportation',
+  'overlay.standard': 'Écran de veille standard',
+  'overlay.standardHint': 'Les pixels transparents et les marges vides sont remplis avec la couleur de fond choisie.',
+  'overlay.backgroundHint': 'Le PNG conserve le canal alpha de l’image et laisse les marges vides transparentes. Ses dimensions correspondent à celles de l’écran de la liseuse.',
+  'overlay.previewNote': 'Le navigateur affiche le PNG sur une page de test. CrossPoint 2.0.0 convertit les couleurs en niveaux de gris et utilise un motif de 4 × 4 pixels pour la transparence partielle.',
+  'overlay.download': 'Télécharger la superposition',
+  'overlay.sampleTitle': 'Un matin paisible',
+  'overlay.sampleText': 'La pièce se remplissait peu à peu de lumière. Dehors, le premier tramway traversa la place. Elle posa sa tasse, tourna la page et poursuivit sa lecture.',
+  'overlay.fitHelp.fit': 'L’image entière reste visible. Les marges vides restent transparentes.',
+  'overlay.fitHelp.fill': 'L’image est agrandie ou réduite puis recadrée aux bords de l’écran. Sa transparence est conservée.',
 };

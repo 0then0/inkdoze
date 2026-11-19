@@ -976,7 +976,8 @@ input[type='color'] {
   overflow: hidden;
 }
 
-.canvas-wrap canvas {
+.canvas-wrap canvas,
+.overlay-preview-frame img {
   display: block;
   max-width: 100%;
   max-height: min(68vh, 900px);
@@ -989,6 +990,45 @@ input[type='color'] {
 
 .canvas-wrap.simulate canvas {
   filter: grayscale(0.15) contrast(0.82) brightness(0.93) sepia(0.12);
+}
+
+.overlay-preview-frame {
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 8px 24px rgb(0 0 0 / 0.18);
+}
+
+.overlay-preview-frame img {
+  position: relative;
+  background: transparent;
+  box-shadow: none;
+}
+
+.overlay-preview-page {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  container-type: inline-size;
+  padding: 10% 9%;
+  background: #fff;
+  color: #171717;
+  font-family: Georgia, serif;
+  line-height: 1.5;
+}
+
+.overlay-page-title {
+  margin-bottom: 1em;
+  font-size: 9cqi;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.overlay-preview-page p {
+  margin: 0 0 0.6em;
+  font-size: 6cqi;
+  text-indent: 1em;
 }
 
 .busy {
@@ -1096,6 +1136,13 @@ input[type='color'] {
   display: flex;
   align-items: center;
   min-width: 0;
+}
+
+.source-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
 }
 
 .name-input {
@@ -1267,6 +1314,10 @@ input[type='color'] {
 @media (max-width: 760px) {
   .download-buttons {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .download-buttons > .button:only-child {
+    grid-column: 1 / -1;
   }
 }
 

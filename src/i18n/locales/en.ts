@@ -82,6 +82,8 @@ export const en = {
   'install.sourceKind.community': 'Community',
   'install.sourceKind.secondary': 'Secondary',
 
+  'install.crosspointOverlay.copy': 'Copy {file} to the root of the SD card.',
+  'install.crosspointOverlay.mode': 'In {firmware}, open {menu}. Choose {page} for the current screen or {cover} for the book cover.',
   'install.crosspoint.mode': 'On the reader, open {menu}.',
   'install.crosspoint.single': 'Copy the file to the root of the SD card as {file}. It takes priority over folders.',
   'install.crosspoint.multiple': 'For a random image on every sleep, put several .bmp files in {dir} (or {legacy}) instead.',
@@ -130,6 +132,7 @@ export const en = {
   'install.remarkable.copy': 'Copy your PNG over {file}.',
   'install.remarkable.restart': 'Run {command} or restart the tablet.',
 
+  'limit.crosspointOverlay.bmpPriority': 'If {file} is in the root of the SD card, CrossPoint tries it before the PNG.',
   'limit.crosspoint.bmpOnly': 'Only uncompressed BMP is read for custom sleep images, up to {max} pixels.',
   'limit.crosspoint.firstSleep': 'The first sleep with a new image takes longer while the firmware converts it.',
   'limit.crosspoint.noPxc': 'PXC sleep images exist only in an unmerged pull request, not in any CrossPoint release.',
@@ -271,6 +274,7 @@ export const en = {
   'download.nothing': 'No images are ready to download.',
   'device.ordinal': { one: '{n}st generation', two: '{n}nd generation', few: '{n}rd generation', other: '{n}th generation' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'CrossPoint sleep overlay',
   'method.xteink-stock-official': 'Xteink stock firmware',
   'method.xteink-stock-community': 'Xteink stock firmware',
   'method.boox-screensaver': 'BOOX firmware',
@@ -287,6 +291,18 @@ export const en = {
   'method.nook-screensavers': 'NOOK firmware',
   'method.supernote-screensaver': 'Supernote firmware',
   'method.remarkable-ssh': 'reMarkable OS via SSH',
+
+  'overlay.transparent': 'Transparent background',
+  'overlay.mode': 'Output mode',
+  'overlay.standard': 'Standard sleep screen',
+  'overlay.standardHint': 'Transparent pixels and empty margins are filled with the chosen background color.',
+  'overlay.backgroundHint': 'PNG preserves the image’s alpha channel and leaves empty margins transparent. The file matches the reader’s screen size.',
+  'overlay.previewNote': 'The browser shows the PNG over a sample page. CrossPoint 2.0.0 converts colors to grayscale and uses a 4 × 4 pixel pattern for partial transparency.',
+  'overlay.download': 'Download overlay',
+  'overlay.sampleTitle': 'A quiet morning',
+  'overlay.sampleText': 'The room slowly filled with light. Outside, the first tram crossed the square. She set her cup down, turned a page and kept reading.',
+  'overlay.fitHelp.fit': 'Keeps the whole image visible. Empty margins stay transparent.',
+  'overlay.fitHelp.fill': 'Scales and crops the image to the screen edges, preserving its transparency.',
 } as const;
 
 export type EnMessages = typeof en;

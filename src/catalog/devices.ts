@@ -18,7 +18,7 @@ const xteink = brand('Xteink', [
     h: 800,
     aliases: ['x4', 'xteink 4.3'],
     sources: [SRC.freeinkBoard, SRC.freeinkDisplay, SRC.crosspointGuide],
-    install: ['crosspoint', 'xteink-stock-community'],
+    install: ['crosspoint', 'xteink-stock-community', 'crosspoint-overlay'],
   },
   {
     id: 'xteink-x4-classic',
@@ -29,7 +29,7 @@ const xteink = brand('Xteink', [
     h: 800,
     aliases: ['x4c', 'x4 classic'],
     sources: [SRC.freeinkX4C, SRC.freeinkBoard],
-    install: ['crosspoint', 'xteink-stock-community'],
+    install: ['crosspoint', 'xteink-stock-community', 'crosspoint-overlay'],
   },
   {
     id: 'xteink-x4-pro',
@@ -40,7 +40,7 @@ const xteink = brand('Xteink', [
     h: 800,
     aliases: ['x4pro', 'x4 pro touch'],
     sources: [SRC.freeinkX4Pro, SRC.freeinkBoard],
-    install: ['crosspoint', 'xteink-stock-official'],
+    install: ['crosspoint', 'xteink-stock-official', 'crosspoint-overlay'],
   },
   {
     id: 'xteink-x3',
@@ -51,7 +51,7 @@ const xteink = brand('Xteink', [
     h: 792,
     aliases: ['x3', 'xteink 3.7'],
     sources: [SRC.freeinkDisplay, SRC.crosspointGuide],
-    install: ['crosspoint', 'xteink-stock-community'],
+    install: ['crosspoint', 'xteink-stock-community', 'crosspoint-overlay'],
   },
 ]);
 
@@ -60,7 +60,7 @@ const xteink = brand('Xteink', [
 // Colour models list the black-and-white grid; colour content renders at half.
 // ---------------------------------------------------------------------------
 const boox = brand('BOOX', [
-  { id: 'boox-picco', model: 'Picco', generation: 'Picco (3.97")', year: 2026, w: 480, h: 800, aliases: ['onyx picco', 'boox tiles'], sources: [booxProduct('picco', 'Picco'), SRC.crosspointRelease], install: ['crosspoint'] },
+  { id: 'boox-picco', model: 'Picco', generation: 'Picco (3.97")', year: 2026, w: 480, h: 800, aliases: ['onyx picco', 'boox tiles'], sources: [booxProduct('picco', 'Picco'), SRC.crosspointRelease], install: ['crosspoint', 'crosspoint-overlay'] },
   { id: 'boox-palma', model: 'Palma', generation: 'Palma (2023)', year: 2023, w: 824, h: 1648, sources: [onyxRuProduct('boox_palma', 'Palma'), booxProduct('palma', 'Palma')], install: ['boox-screensaver'] },
   { id: 'boox-palma-2', model: 'Palma 2', generation: 'Palma 2 (2024)', year: 2024, w: 824, h: 1648, sources: [onyxRuProduct('boox_palma2', 'Palma 2'), booxProduct('palma2', 'Palma 2')], install: ['boox-screensaver'] },
   { id: 'boox-palma-2-pro', model: 'Palma 2 Pro', generation: 'Palma 2 Pro (Kaleido 3)', year: 2025, w: 824, h: 1648, color: true, sources: [onyxRuProduct('boox_palma2pro', 'Palma 2 Pro'), booxProduct('palma2pro', 'Palma 2 Pro')], install: ['boox-screensaver'] },

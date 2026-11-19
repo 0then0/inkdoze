@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- CrossPoint 2.0.0 sleep overlay mode with a reading-page preview and single-image `sleep-overlay.png` export. The PNG preserves transparency and uses the selected reader’s screen size. The installation guide covers both overlay modes and BMP file priority.
+
 ## [0.2.0] - 2026-11-18
 
 ### Added

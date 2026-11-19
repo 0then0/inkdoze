@@ -9,6 +9,8 @@ declare const self: DedicatedWorkerGlobalScope;
 
 interface Loaded {
   bitmap: ImageBitmap;
+  file: Blob;
+  decoder?: HeicDecoder;
   width: number;
   height: number;
 }
@@ -17,9 +19,41 @@ const images = new Map<string, Loaded>();
 /** Images being decoded, and those released before decoding finished. */
 const loading = new Set<string>();
 const releasedWhileLoading = new Set<string>();
+let activeOverlay: { image: Loaded; bitmap: Promise<ImageBitmap> } | undefined;
 
 function post(msg: WorkerResponse, transfer: Transferable[] = []) {
   self.postMessage(msg, transfer);
+}
+
+function decodeBitmap(file: Blob, premultiplyAlpha: 'none' | 'premultiply'): Promise<ImageBitmap> {
+  return createImageBitmap(file, { imageOrientation: 'from-image', premultiplyAlpha });
+}
+
+async function decodeOverlayBitmap(imageId: string, img: Loaded): Promise<ImageBitmap> {
+  // Decode premultiplied from the original. Scaling straight-alpha bitmaps can
+  // sample hidden RGB, and copying those bitmaps does not repair them in WebKit.
+  if (!img.decoder) return decodeBitmap(img.file, 'premultiply');
+  const { bitmap } = await decodeHeic(imageId, img.file, img, () => images.get(imageId) !== img, 'premultiply');
+  return bitmap;
+}
+
+function releaseOverlayBitmap() {
+  const released = activeOverlay;
+  activeOverlay = undefined;
+  // Jobs already awaiting the bitmap render synchronously before this callback.
+  void released?.bitmap.then((bitmap) => bitmap.close(), () => undefined);
+}
+
+function overlayBitmap(imageId: string, image: Loaded): Promise<ImageBitmap> {
+  if (activeOverlay?.image === image) return activeOverlay.bitmap;
+  releaseOverlayBitmap();
+  const bitmap = decodeOverlayBitmap(imageId, image);
+  const cached = { image, bitmap };
+  activeOverlay = cached;
+  void bitmap.catch(() => {
+    if (activeOverlay === cached) activeOverlay = undefined;
+  });
+  return bitmap;
 }
 
 async function thumbnail(bitmap: ImageBitmap): Promise<Blob> {
@@ -53,7 +87,7 @@ async function load(req: Extract<WorkerRequest, { type: 'load' }>) {
       if (probe.kind === 'heic') {
         ({ bitmap, decoder } = await decodeHeic(req.imageId, req.file, probe, () => releasedWhileLoading.has(req.imageId)));
       } else {
-        bitmap = await createImageBitmap(req.file, { imageOrientation: 'from-image', premultiplyAlpha: 'none' });
+        bitmap = await decodeBitmap(req.file, 'none');
       }
     } catch (e) {
       if (e instanceof LoadFailure) post({ type: 'error', reqId: req.reqId, code: e.code, ...(e.detail ? { detail: e.detail } : {}) });
@@ -71,8 +105,10 @@ async function load(req: Extract<WorkerRequest, { type: 'load' }>) {
       post({ type: 'error', reqId: req.reqId, code: 'tooManyPixels', detail: `${bitmap.width}x${bitmap.height}` });
       return;
     }
-    images.get(req.imageId)?.bitmap.close();
-    images.set(req.imageId, { bitmap, width: bitmap.width, height: bitmap.height });
+    const previous = images.get(req.imageId);
+    if (activeOverlay?.image === previous) releaseOverlayBitmap();
+    previous?.bitmap.close();
+    images.set(req.imageId, { bitmap, file: req.file, decoder, width: bitmap.width, height: bitmap.height });
     const thumb = await thumbnail(bitmap);
     post({ type: 'loaded', reqId: req.reqId, width: bitmap.width, height: bitmap.height, thumbnail: thumb, ...(decoder ? { decoder } : {}) });
   } finally {
@@ -86,22 +122,25 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   try {
     if (req.type === 'load') return await load(req);
     if (req.type === 'release') {
-      if (loading.has(req.imageId)) {
-        releasedWhileLoading.add(req.imageId);
-        cancelHeic(req.imageId);
-      }
-      images.get(req.imageId)?.bitmap.close();
+      if (loading.has(req.imageId)) releasedWhileLoading.add(req.imageId);
+      cancelHeic(req.imageId);
+      const image = images.get(req.imageId);
+      if (activeOverlay?.image === image) releaseOverlayBitmap();
+      image?.bitmap.close();
       images.delete(req.imageId);
       return post({ type: 'released', reqId: req.reqId });
     }
     const img = images.get(req.imageId);
     if (!img) return post({ type: 'error', reqId: req.reqId, code: 'missing' });
-    const rendered = renderPixels(img.bitmap, { width: img.width, height: img.height }, req.job);
+    if (!req.job.preserveAlpha) releaseOverlayBitmap();
+    const source = req.job.preserveAlpha ? await overlayBitmap(req.imageId, img) : img.bitmap;
+    if (images.get(req.imageId) !== img) return post({ type: 'error', reqId: req.reqId, code: 'missing' });
+    const rendered = renderPixels(source, { width: img.width, height: img.height }, req.job);
     if (req.type === 'preview') {
       const bitmap = rendered.canvas.transferToImageBitmap();
       return post({ type: 'preview', reqId: req.reqId, bitmap, width: rendered.width, height: rendered.height }, [bitmap]);
     }
-    const blob = await encodeRendered(rendered, req.format, req.jpegQuality);
+    const blob = await encodeRendered(rendered, req.job.preserveAlpha ? 'png' : req.format, req.jpegQuality);
     post({ type: 'exported', reqId: req.reqId, blob, width: rendered.width, height: rendered.height });
   } catch (e) {
     post({ type: 'error', reqId: req.reqId, code: 'render', detail: String(e) });

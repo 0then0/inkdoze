@@ -78,6 +78,8 @@ export const ptBR: Messages = {
   'install.sourceKind.community': 'Comunidade',
   'install.sourceKind.secondary': 'Secundária',
 
+  'install.crosspointOverlay.copy': 'Copie {file} para a raiz do cartão SD.',
+  'install.crosspointOverlay.mode': 'No {firmware}, abra {menu}. Escolha {page} para a tela atual ou {cover} para a capa do livro.',
   'install.crosspoint.mode': 'No leitor, abra {menu}.',
   'install.crosspoint.single': 'Copie o arquivo para a raiz do cartão SD com o nome {file}. Ele tem prioridade sobre as pastas.',
   'install.crosspoint.multiple': 'Para uma imagem aleatória a cada descanso, coloque vários arquivos .bmp em {dir} (ou {legacy}).',
@@ -126,6 +128,7 @@ export const ptBR: Messages = {
   'install.remarkable.copy': 'Substitua {file} pelo seu PNG.',
   'install.remarkable.restart': 'Execute {command} ou reinicie o tablet.',
 
+  'limit.crosspointOverlay.bmpPriority': 'Se {file} estiver na raiz do cartão SD, o CrossPoint tenta abri-lo antes do PNG.',
   'limit.crosspoint.bmpOnly': 'Para imagens de descanso próprias, só BMP sem compressão de até {max} pixels é lido.',
   'limit.crosspoint.firstSleep': 'O primeiro descanso com uma imagem nova demora mais enquanto o firmware a converte.',
   'limit.crosspoint.noPxc': 'Telas de descanso em PXC só existem em um pull request não incorporado, em nenhuma versão do CrossPoint.',
@@ -268,6 +271,7 @@ export const ptBR: Messages = {
 
   'device.ordinal': { other: '{n}ª geração' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'Sobreposição de descanso do CrossPoint',
   'method.xteink-stock-official': 'Firmware original da Xteink',
   'method.xteink-stock-community': 'Firmware original da Xteink',
   'method.boox-screensaver': 'Firmware da BOOX',
@@ -284,4 +288,16 @@ export const ptBR: Messages = {
   'method.nook-screensavers': 'Firmware do NOOK',
   'method.supernote-screensaver': 'Firmware da Supernote',
   'method.remarkable-ssh': 'reMarkable OS via SSH',
+
+  'overlay.transparent': 'Fundo transparente',
+  'overlay.mode': 'Modo de exportação',
+  'overlay.standard': 'Tela de repouso padrão',
+  'overlay.standardHint': 'Os pixels transparentes e as margens vazias são preenchidos com a cor de fundo escolhida.',
+  'overlay.backgroundHint': 'O PNG preserva o canal alfa da imagem e mantém as margens vazias transparentes. Suas dimensões correspondem à resolução da tela do leitor.',
+  'overlay.previewNote': 'O navegador exibe o PNG sobre uma página de teste. O CrossPoint 2.0.0 converte as cores para tons de cinza e usa um padrão de 4 × 4 pixels para a transparência parcial.',
+  'overlay.download': 'Baixar sobreposição',
+  'overlay.sampleTitle': 'Uma manhã tranquila',
+  'overlay.sampleText': 'A luz foi tomando conta do quarto. Lá fora, o primeiro bonde atravessou a praça. Ela pousou a xícara, virou a página e continuou a ler.',
+  'overlay.fitHelp.fit': 'A imagem inteira fica visível. As margens vazias permanecem transparentes.',
+  'overlay.fitHelp.fill': 'A imagem é redimensionada e recortada até as bordas da tela, com a transparência preservada.',
 };

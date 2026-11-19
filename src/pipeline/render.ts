@@ -8,7 +8,7 @@ import type { RenderJob, Size } from './types.ts';
 export interface Rendered {
   width: number;
   height: number;
-  /** Opaque RGBA after background, tone and palette processing. */
+  /** RGBA after placement and any background, tone and palette processing. */
   rgba: Uint8ClampedArray;
   /** Grayscale plane when the job is grayscale. */
   gray: Uint8Array | null;
@@ -44,6 +44,7 @@ export function renderPixels(source: CanvasImageSource, sourceSize: Size, job: R
   }
   const image = ctx.getImageData(0, 0, width, height);
   const rgba = image.data;
+  if (job.preserveAlpha) return { width, height, rgba, gray: null, canvas };
   flattenAlpha(rgba, parseHexColor(job.background));
   const manual = toneCurve(job.brightness, job.contrast, job.invert);
   // Automatic tone runs first; manual brightness and contrast fine-tune its result.

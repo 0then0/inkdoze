@@ -3,8 +3,11 @@ import type { InstallMethod } from './types.ts';
 
 const VERIFIED = '2026-11-10';
 
+export const CROSSPOINT_OVERLAY_METHOD = 'crosspoint-overlay';
+
 export type InstallMethodId =
   | 'crosspoint'
+  | typeof CROSSPOINT_OVERLAY_METHOD
   | 'xteink-stock-official'
   | 'xteink-stock-community'
   | 'boox-screensaver'
@@ -49,6 +52,25 @@ export const INSTALL_METHODS: Record<InstallMethodId, InstallMethod> = {
     ],
     sources: [SRC.crosspointGuide, SRC.crosspointSleep, SRC.crosspointBitmap, SRC.crosspointRelease, SRC.crosspointPxcPr],
     verified: VERIFIED,
+  },
+  [CROSSPOINT_OVERLAY_METHOD]: {
+    id: CROSSPOINT_OVERLAY_METHOD,
+    status: 'third-party',
+    software: 'CrossPoint 2.0.0',
+    communityDocumented: false,
+    formats: ['png'],
+    recommendedFormat: 'png',
+    fileName: 'sleep-overlay',
+    steps: [
+      { key: 'install.crosspointOverlay.copy', params: { file: 'sleep-overlay.png' } },
+      {
+        key: 'install.crosspointOverlay.mode',
+        params: { firmware: 'CrossPoint 2.0.0', menu: 'Settings › Display › Sleep Screen', page: 'Transparent', cover: 'Cover + Transparent' },
+      },
+    ],
+    limitations: [{ key: 'limit.crosspointOverlay.bmpPriority', params: { file: 'sleep-overlay.bmp' } }],
+    sources: [SRC.crosspointOverlayGuide, SRC.crosspointSleep, SRC.crosspointOverlayPng, SRC.crosspointOverlayPr],
+    verified: '2026-11-19',
   },
   'xteink-stock-official': {
     id: 'xteink-stock-official',

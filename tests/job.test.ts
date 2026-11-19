@@ -51,6 +51,40 @@ describe('render job', () => {
     expect(r.ok && r.job.autoTone).toBe(true);
   });
 
+  it('uses device dimensions and only framing settings for a sleep overlay', () => {
+    const settings = {
+      ...DEFAULT_SETTINGS,
+      target: 'custom',
+      customWidth: 9000,
+      fit: 'fit',
+      background: '#ff0000',
+      colorMode: 'grayscale',
+      brightness: 50,
+      contrast: 50,
+      invert: true,
+      levels: 2,
+      dither: 'atkinson',
+    } as const;
+    const adjust = { ...DEFAULT_ADJUST, rotation: 90, crop: { x: 0, y: 0, w: 0.5, h: 0.5 }, zoom: 0.5, offsetX: 1 } as const;
+    expect(buildJob(src, settings, adjust, x4, 'png', true)).toMatchObject({
+      ok: true,
+      job: {
+        ...adjust,
+        target: { width: 480, height: 800 },
+        fit: 'fit',
+        preserveAlpha: true,
+        colorMode: 'color',
+        autoTone: false,
+        brightness: 0,
+        contrast: 0,
+        invert: false,
+        levels: 256,
+        dither: 'none',
+      },
+    });
+    expect(buildJob(src, settings, adjust, undefined, 'png', true)).toEqual({ ok: false, error: 'overlayDeviceRequired' });
+  });
+
   it('resolves the recommended format from the install method', () => {
     expect(resolveFormat('auto', getInstallMethod('crosspoint'))).toBe('bmp24');
     expect(resolveFormat('auto', getInstallMethod('kobo-screensaver-folder'))).toBe('jpeg');

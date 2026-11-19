@@ -78,6 +78,8 @@ export const ja: Messages = {
   'install.sourceKind.community': 'コミュニティ',
   'install.sourceKind.secondary': '二次情報',
 
+  'install.crosspointOverlay.copy': '{file} を SD カードのルートにコピーします。',
+  'install.crosspointOverlay.mode': '{firmware} で {menu} を開きます。現在の画面に重ねるには {page}、本の表紙に重ねるには {cover} を選びます。',
   'install.crosspoint.mode': 'リーダーで {menu} を開きます。',
   'install.crosspoint.single': 'ファイルを {file} という名前で SD カードのルートにコピーします。フォルダーより優先されます。',
   'install.crosspoint.multiple': 'スリープのたびにランダムな画像を表示するには、複数の .bmp ファイルを {dir}(または {legacy})に入れます。',
@@ -126,6 +128,7 @@ export const ja: Messages = {
   'install.remarkable.copy': '作成した PNG で {file} を置き換えます。',
   'install.remarkable.restart': '{command} を実行するか、タブレットを再起動します。',
 
+  'limit.crosspointOverlay.bmpPriority': 'SD カードのルートに {file} がある場合、CrossPoint は PNG より先にそのファイルの読み込みを試みます。',
   'limit.crosspoint.bmpOnly': '独自のスリープ画像として読み込めるのは、{max} ピクセルまでの非圧縮 BMP のみです。',
   'limit.crosspoint.firstSleep': '新しい画像で初めてスリープするときは、ファームウェアの変換処理のため時間がかかります。',
   'limit.crosspoint.noPxc': 'PXC 形式のスリープ画像は未マージのプルリクエストにのみ存在し、CrossPoint のリリースには含まれていません。',
@@ -268,6 +271,7 @@ export const ja: Messages = {
 
   'device.ordinal': { other: '第{n}世代' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'CrossPoint スリープオーバーレイ',
   'method.xteink-stock-official': 'Xteink 標準ファームウェア',
   'method.xteink-stock-community': 'Xteink 標準ファームウェア',
   'method.boox-screensaver': 'BOOX ファームウェア',
@@ -284,4 +288,16 @@ export const ja: Messages = {
   'method.nook-screensavers': 'NOOK ファームウェア',
   'method.supernote-screensaver': 'Supernote ファームウェア',
   'method.remarkable-ssh': 'SSH 経由の reMarkable OS',
+
+  'overlay.transparent': '透明な背景',
+  'overlay.mode': '書き出しモード',
+  'overlay.standard': '通常のスリープ画面',
+  'overlay.standardHint': '透明なピクセルと余白は、選択した背景色で塗りつぶされます。',
+  'overlay.backgroundHint': 'PNG は画像のアルファチャンネルを保持し、余白を透明なままにします。出力サイズはリーダーの画面解像度に合わせます。',
+  'overlay.previewNote': 'ブラウザーではサンプルページに PNG を重ねて表示します。CrossPoint 2.0.0 は色をグレースケールに変換し、半透明を 4 × 4 ピクセルのパターンで表現します。',
+  'overlay.download': 'オーバーレイをダウンロード',
+  'overlay.sampleTitle': '静かな朝',
+  'overlay.sampleText': '部屋に少しずつ光が差し込んだ。窓の外では始発の路面電車が広場を横切った。彼女はカップを置き、ページをめくって読書を続けた。',
+  'overlay.fitHelp.fit': '画像全体を表示し、余白は透明のままにします。',
+  'overlay.fitHelp.fill': '透明度を保ったまま、画像を画面の端まで拡大または縮小して切り抜きます。',
 };

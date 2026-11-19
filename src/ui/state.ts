@@ -1,4 +1,6 @@
 import type { Brand } from '../catalog/types.ts';
+import { getDevice } from '../catalog/index.ts';
+import { CROSSPOINT_OVERLAY_METHOD } from '../catalog/install.ts';
 import { DEFAULT_ADJUST, DEFAULT_SETTINGS, type Adjustments, type OutputSettings } from '../pipeline/types.ts';
 import type { TextKey } from '../i18n/keys.ts';
 import type { HeicDecoder } from '../worker/protocol.ts';
@@ -22,12 +24,14 @@ export interface ImageItem {
 }
 
 export type Scope = 'all' | 'one';
+export type OutputMode = 'standard' | typeof CROSSPOINT_OVERLAY_METHOD;
 
 export interface AppState {
   images: ImageItem[];
   selectedId: string | null;
   deviceId: string | null;
   methodId: string | null;
+  outputMode: OutputMode;
   batch: OutputSettings;
   scope: Scope;
   query: string;
@@ -42,6 +46,7 @@ export const initialState: AppState = {
   selectedId: null,
   deviceId: DEFAULT_DEVICE,
   methodId: null,
+  outputMode: 'standard',
   batch: DEFAULT_SETTINGS,
   scope: 'all',
   query: '',
@@ -57,6 +62,7 @@ export type Action =
   | { type: 'select'; id: string | null }
   | { type: 'selectDevice'; id: string | null }
   | { type: 'selectMethod'; id: string | null }
+  | { type: 'setOutputMode'; mode: OutputMode }
   | { type: 'setScope'; scope: Scope }
   | { type: 'setSettings'; patch: Partial<OutputSettings> }
   | { type: 'resetOverrides'; id: string }
@@ -103,10 +109,15 @@ export function reducer(state: AppState, action: Action): AppState {
         ...state,
         deviceId: action.id,
         methodId: null,
+        outputMode: action.id && getDevice(action.id)?.install.includes(CROSSPOINT_OVERLAY_METHOD) ? state.outputMode : 'standard',
         batch: action.id ? { ...state.batch, target: 'device' } : { ...state.batch, target: 'custom' },
       };
     case 'selectMethod':
-      return { ...state, methodId: action.id };
+      return action.id === CROSSPOINT_OVERLAY_METHOD
+        ? { ...state, outputMode: CROSSPOINT_OVERLAY_METHOD }
+        : { ...state, methodId: action.id, outputMode: 'standard' };
+    case 'setOutputMode':
+      return { ...state, outputMode: action.mode };
     case 'setScope':
       return { ...state, scope: action.scope };
     case 'setSettings': {
@@ -116,7 +127,12 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, batch: { ...state.batch, ...action.patch } };
     }
     case 'resetOverrides':
-      return patchImage(state, action.id, (i) => ({ ...i, overrides: {} }));
+      return patchImage(state, action.id, (i) => {
+        if (state.outputMode !== CROSSPOINT_OVERLAY_METHOD) return { ...i, overrides: {} };
+        const overrides = { ...i.overrides };
+        delete overrides.fit;
+        return { ...i, overrides };
+      });
     case 'setAdjust':
       return patchImage(state, action.id, (i) => ({ ...i, adjust: { ...i.adjust, ...action.patch } }));
     case 'resetAdjust':

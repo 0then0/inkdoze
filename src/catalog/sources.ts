@@ -13,6 +13,21 @@ export const SRC = {
     title: 'CrossPoint User Guide, 3.7 Sleep Screen',
     url: `${CROSSPOINT_REPO}/blob/develop/USER_GUIDE.md#37-sleep-screen`,
   },
+  crosspointOverlayGuide: {
+    kind: 'firmware',
+    title: `CrossPoint ${CROSSPOINT_TAG} User Guide: transparent overlay images`,
+    url: `${CROSSPOINT_REPO}/blob/${CROSSPOINT_TAG}/USER_GUIDE.md#transparent-overlay-images`,
+  },
+  crosspointOverlayPng: {
+    kind: 'firmware',
+    title: `CrossPoint ${CROSSPOINT_TAG} PNG renderer`,
+    url: `${CROSSPOINT_REPO}/blob/${CROSSPOINT_TAG}/lib/Epub/Epub/converters/PngToFramebufferConverter.cpp#L280-L298`,
+  },
+  crosspointOverlayPr: {
+    kind: 'firmware',
+    title: 'CrossPoint PR #2974: transparent PNG sleep overlays',
+    url: `${CROSSPOINT_REPO}/pull/2974`,
+  },
   crosspointSleep: {
     kind: 'firmware',
     title: `CrossPoint ${CROSSPOINT_TAG} SleepActivity.cpp`,

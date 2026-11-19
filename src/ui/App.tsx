@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'preact/hooks';
 import { deviceMethods, getDevice } from '../catalog/index.ts';
+import { CROSSPOINT_OVERLAY_METHOD } from '../catalog/install.ts';
 import type { InstallMethod } from '../catalog/types.ts';
 import { EPUB_MIME, createCoverEpub, epubImageFormat } from '../formats/epub.ts';
 import { FORMATS, resolveFormat } from '../formats/registry.ts';
@@ -18,7 +19,7 @@ import { DownloadPanel, type Progress } from './DownloadPanel.tsx';
 import { FilesPanel } from './FilesPanel.tsx';
 import { Logo } from './Icon.tsx';
 import { InstallGuide } from './InstallGuide.tsx';
-import { PreviewStage, type PreviewFrame } from './PreviewStage.tsx';
+import { PreviewStage, type PreviewFrame, type StageFrame } from './PreviewStage.tsx';
 import { SettingsPanel } from './SettingsPanel.tsx';
 import { effectiveSettings, initialState, reducer, type AppState, type ImageItem } from './state.ts';
 import { saveBlob } from './save.ts';
@@ -86,7 +87,7 @@ export function App() {
   const loads = useRef(new Map<string, AbortController>());
 
   const [notice, setNotice] = useState<string | null>(null);
-  const [frame, setFrame] = useState<PreviewFrame | null>(null);
+  const [frame, setFrame] = useState<(StageFrame & { key: string; imageId: string }) | null>(null);
   const [previewBusy, setPreviewBusy] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
@@ -99,7 +100,9 @@ export function App() {
 
   const device = state.deviceId ? getDevice(state.deviceId) : undefined;
   const methods = device ? deviceMethods(device) : [];
-  const method: InstallMethod | undefined = methods.find((m) => m.id === state.methodId) ?? methods[0];
+  const overlayMethod = methods.find((m) => m.id === CROSSPOINT_OVERLAY_METHOD);
+  const overlay = !!overlayMethod && state.outputMode === CROSSPOINT_OVERLAY_METHOD;
+  const method: InstallMethod | undefined = overlay ? overlayMethod : methods.find((m) => m.id === state.methodId) ?? methods[0];
   const selected = state.images.find((i) => i.id === state.selectedId);
   const selectedIndex = state.images.findIndex((i) => i.id === state.selectedId);
   const settings = effectiveSettings(state, selected);
@@ -123,16 +126,16 @@ export function App() {
     }
   }, [state.deviceId]);
 
-  const formatFor = useCallback((item: ImageItem | undefined) => resolveFormat(effectiveSettings(stateRef.current, item).format, method), [method]);
+  const formatFor = useCallback((item: ImageItem | undefined) => overlay ? 'png' : resolveFormat(effectiveSettings(stateRef.current, item).format, method), [method, overlay]);
   const extensionFor = useCallback((item: ImageItem) => FORMATS[formatFor(item)].extension, [formatFor]);
 
   const jobFor = useCallback(
     (item: ImageItem): RenderJob | null => {
       const s = effectiveSettings(stateRef.current, item);
-      const r = buildJob({ width: item.width, height: item.height }, s, item.adjust, device, resolveFormat(s.format, method));
+      const r = buildJob({ width: item.width, height: item.height }, s, item.adjust, device, formatFor(item), overlay);
       return r.ok ? r.job : null;
     },
-    [device, method],
+    [device, formatFor, overlay],
   );
 
   // ---------------------------------------------------------------- files
@@ -247,40 +250,46 @@ export function App() {
   }, [addFiles]);
 
   // ---------------------------------------------------------------- preview
+  useEffect(() => () => {
+    if (frame && 'url' in frame) URL.revokeObjectURL(frame.url);
+    if (frame && 'bitmap' in frame) frame.bitmap.close();
+  }, [frame]);
+
   const previewKey = selected && selected.status === 'ready' ? JSON.stringify([selected.id, jobFor(selected)]) : null;
   useEffect(() => {
     setPreviewError(null);
-    if (!client || !selected || selected.status !== 'ready') {
-      setFrame((old) => {
-        old?.bitmap.close();
-        return null;
-      });
+    if (!client || !selected || !previewKey) {
+      setFrame(null);
       setPreviewBusy(false);
       return;
     }
     const job = jobFor(selected);
     if (!job) {
-      setFrame((old) => {
-        old?.bitmap.close();
-        return null;
-      });
+      setFrame(null);
+      setPreviewBusy(false);
       setPreviewError(tr.t('error.outputTooLarge', { max: LIMITS.maxOutputSide }));
       return;
     }
     const ctrl = new AbortController();
     setPreviewBusy(true);
     const timer = setTimeout(() => {
-      client
-        .preview(selected.id, job, ctrl.signal)
+      // Display the encoded PNG directly so the browser composites the exported raster.
+      const request = job.preserveAlpha
+        ? queue.run((signal) => client.export(selected.id, job, 'png', 1, signal), ctrl.signal)
+        : client.preview(selected.id, job, ctrl.signal);
+      void request
         .then((r) => {
-          setFrame((old) => {
-            old?.bitmap.close();
-            return { bitmap: r.bitmap, width: r.width, height: r.height };
-          });
+          if (ctrl.signal.aborted) {
+            if (r.type === 'preview') r.bitmap.close();
+            return;
+          }
+          const dimensions = { width: r.width, height: r.height, key: previewKey, imageId: selected.id };
+          setFrame(r.type === 'preview' ? { ...dimensions, bitmap: r.bitmap } : { ...dimensions, url: URL.createObjectURL(r.blob) });
           setPreviewBusy(false);
         })
         .catch((e: unknown) => {
-          if (isAbort(e)) return;
+          if (ctrl.signal.aborted || isAbort(e)) return;
+          if (job.preserveAlpha) setFrame(null);
           setPreviewBusy(false);
           setPreviewError(tr.t('error.render'));
         });
@@ -291,7 +300,7 @@ export function App() {
     };
     // previewKey captures every input of the job.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [previewKey, client, tr]);
+  }, [previewKey, client, queue, tr]);
 
   // ---------------------------------------------------------------- crop
   const openCrop = useCallback(() => {
@@ -319,6 +328,7 @@ export function App() {
       invert: false,
       levels: 256,
       dither: 'none',
+      ...(overlay ? { preserveAlpha: true } : {}),
     };
     client
       .preview(selected.id, job, ctrl.signal)
@@ -326,7 +336,7 @@ export function App() {
       .catch((e: unknown) => {
         if (!isAbort(e)) setCropOpen(false);
       });
-  }, [client, selected]);
+  }, [client, selected, overlay]);
 
   const closeCrop = () => {
     // An unfinished render is discarded; the client closes its bitmap when it arrives.
@@ -338,21 +348,22 @@ export function App() {
   };
 
   // ---------------------------------------------------------------- export
-  const outputName = (item: ImageItem) => `${sanitizeBaseName(item.name)}.${extensionFor(item)}`;
+  const outputName = (item: ImageItem) => `${sanitizeBaseName(overlay ? (method?.fileName ?? 'sleep-overlay') : item.name)}.${extensionFor(item)}`;
 
   const downloadOne = async () => {
     const item = selected;
     if (!client || !item || item.status !== 'ready') return;
     const job = jobFor(item);
     if (!job) return setMessage(t('error.outputTooLarge', { max: LIMITS.maxOutputSide }));
+    const format = formatFor(item);
+    const name = outputName(item);
+    const { jpegQuality } = effectiveSettings(stateRef.current, item);
     const ctrl = new AbortController();
     exportAbort.current = ctrl;
     setMessage(null);
     setProgress({ done: 0, total: 1 });
     try {
-      const s = effectiveSettings(stateRef.current, item);
-      const r = await queue.run((signal) => client.export(item.id, job, resolveFormat(s.format, method), s.jpegQuality, signal), ctrl.signal);
-      const name = outputName(item);
+      const r = await queue.run((signal) => client.export(item.id, job, format, jpegQuality, signal), ctrl.signal);
       saveBlob(r.blob, name);
       setMessage(t('download.done', { name }));
     } catch (e) {
@@ -408,7 +419,7 @@ export function App() {
   };
 
   const downloadAll = async () => {
-    if (!client) return;
+    if (!client || overlay) return;
     const items = stateRef.current.images.filter((i) => i.status === 'ready');
     if (!items.length) return setMessage(t('download.nothing'));
     const ctrl = new AbortController();
@@ -465,7 +476,7 @@ export function App() {
     return [
       t('preview.size', { w: String(job.target.width), h: String(job.target.height) }),
       t(`format.${formatFor(selected)}`),
-      t(job.colorMode === 'color' ? 'settings.color' : 'settings.grayscale'),
+      t(overlay ? 'overlay.transparent' : job.colorMode === 'color' ? 'settings.color' : 'settings.grayscale'),
     ].join(' · ');
   })();
 
@@ -528,7 +539,7 @@ export function App() {
             device={device}
             method={method}
             onMethod={(id) => dispatch({ type: 'selectMethod', id })}
-            onUseName={selected ? (name) => dispatch({ type: 'updateImage', id: selected.id, patch: { name } }) : undefined}
+            onUseName={selected && !overlay ? (name) => dispatch({ type: 'updateImage', id: selected.id, patch: { name } }) : undefined}
           />
         </div>
         <div class="col col-work">
@@ -536,7 +547,8 @@ export function App() {
             item={selected}
             index={selectedIndex}
             total={state.images.length}
-            frame={frame}
+            frame={frame && (overlay ? 'url' in frame && frame.imageId === selected?.id : 'bitmap' in frame) ? frame : null}
+            overlay={overlay}
             busy={previewBusy}
             error={previewError ?? (selected?.error ? t(selected.error.key, selected.error.params) : null)}
             onAdjust={setAdjust}
@@ -549,6 +561,7 @@ export function App() {
             images={state.images}
             selectedId={state.selectedId}
             extension={extensionFor}
+            overlay={overlay}
             dispatch={dispatch}
             onAdd={addFiles}
             onRemove={removeImage}
@@ -557,7 +570,7 @@ export function App() {
           />
         </div>
         <div class="col col-output">
-          <SettingsPanel settings={settings} scope={state.scope} selected={selected} device={device} method={method} dispatch={dispatch} />
+          <SettingsPanel settings={settings} scope={state.scope} selected={selected} device={device} method={method} overlayAvailable={!!overlayMethod} overlay={overlay} dispatch={dispatch} />
           <DownloadPanel
             selected={selected}
             fileName={selected ? outputName(selected) : null}
@@ -566,6 +579,8 @@ export function App() {
             progress={progress}
             message={message}
             epub={method?.coverEpub === true}
+            overlay={overlay}
+            waitingForPreview={overlay && frame?.key !== previewKey}
             onOne={downloadOne}
             onEpub={downloadEpub}
             onAll={downloadAll}

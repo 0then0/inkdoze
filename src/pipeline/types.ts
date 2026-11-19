@@ -93,6 +93,8 @@ export interface RenderJob {
   zoom: number;
   offsetX: number;
   offsetY: number;
+  /** For a sleep overlay, keep the canvas alpha and bypass tone and quantization. */
+  preserveAlpha?: true;
   background: string;
   colorMode: ColorMode;
   autoTone: boolean;

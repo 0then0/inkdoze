@@ -9,6 +9,7 @@ interface Props {
   images: ImageItem[];
   selectedId: string | null;
   extension: (item: ImageItem) => string;
+  overlay: boolean;
   dispatch: (a: Action) => void;
   onAdd: (files: File[]) => void;
   onRemove: (id: string) => void;
@@ -46,7 +47,7 @@ export function FilePicker({ onAdd, label, primary }: { onAdd: (files: File[]) =
   );
 }
 
-export function FilesPanel({ images, selectedId, extension, dispatch, onAdd, onRemove, onRemoveAll, notice }: Props) {
+export function FilesPanel({ images, selectedId, extension, overlay, dispatch, onAdd, onRemove, onRemoveAll, notice }: Props) {
   const { t, tp } = useI18n();
   return (
     <section class="panel files-panel" aria-labelledby="files-title">
@@ -85,7 +86,7 @@ export function FilesPanel({ images, selectedId, extension, dispatch, onAdd, onR
                   {item.thumbUrl ? <img src={item.thumbUrl} alt="" /> : <Icon name="image" size={22} />}
                 </button>
                 <div class="file-body">
-                  <div class="name-row">
+                  {overlay ? <p class="source-name" title={item.file.name}>{item.file.name}</p> : <div class="name-row">
                     <input
                       class="name-input"
                       type="text"
@@ -99,7 +100,7 @@ export function FilesPanel({ images, selectedId, extension, dispatch, onAdd, onR
                       }
                     />
                     <span class="ext">.{extension(item)}</span>
-                  </div>
+                  </div>}
                   <div class="file-meta">
                     {item.status === 'loading' && <span class="muted">{t('files.loading')}</span>}
                     {item.status === 'ready' && (
@@ -107,7 +108,7 @@ export function FilesPanel({ images, selectedId, extension, dispatch, onAdd, onR
                         {item.width} × {item.height}
                       </span>
                     )}
-                    {hasOverrides(item) && (
+                    {(overlay ? item.overrides.fit !== undefined : hasOverrides(item)) && (
                       <span class="tag" title={t('files.customTitle')}>
                         {t('files.custom')}
                       </span>

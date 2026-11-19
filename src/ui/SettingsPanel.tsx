@@ -1,4 +1,5 @@
 import type { Device, InstallMethod, OutputFormat } from '../catalog/types.ts';
+import { CROSSPOINT_OVERLAY_METHOD } from '../catalog/install.ts';
 import { FORMATS, resolveFormat, selectableFormats } from '../formats/registry.ts';
 import { useI18n } from '../i18n/index.ts';
 import type { TextKey } from '../i18n/keys.ts';
@@ -61,6 +62,8 @@ interface Props {
   selected: ImageItem | undefined;
   device: Device | undefined;
   method: InstallMethod | undefined;
+  overlayAvailable: boolean;
+  overlay: boolean;
   dispatch: (a: Action) => void;
 }
 
@@ -93,7 +96,7 @@ function Radios<T extends string | number>(props: {
   );
 }
 
-export function SettingsPanel({ settings: s, scope, selected, device, method, dispatch }: Props) {
+export function SettingsPanel({ settings: s, scope, selected, device, method, overlayAvailable, overlay, dispatch }: Props) {
   const { t } = useI18n();
   const set = (patch: Partial<OutputSettings>) => dispatch({ type: 'setSettings', patch });
   const format: OutputFormat = resolveFormat(s.format, method);
@@ -108,6 +111,7 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
   const formats = selectableFormats(method);
   const unconfirmed = method && method.formats.length > 0 && !method.formats.includes(format);
   const oneDisabled = !selected;
+  const fitHelp: TextKey = overlay && s.fit !== 'stretch' ? `overlay.fitHelp.${s.fit}` : `settings.fitHelp.${s.fit}`;
 
   return (
     <section class="panel settings-panel" aria-labelledby="settings-title">
@@ -115,13 +119,31 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
         <h2 id="settings-title">{t('settings.title')}</h2>
       </div>
 
-      <label class="auto-card">
-        <input type="checkbox" checked={s.autoTone} data-testid="auto-tone" onChange={(e) => set({ autoTone: e.currentTarget.checked })} />
-        <span>
-          <strong>{t('settings.auto')}</strong>
-          <span class="hint">{t('settings.autoHint')}</span>
-        </span>
-      </label>
+      {overlayAvailable && (
+        <div class="field">
+          <label class="field-label" for="output-mode">{t('overlay.mode')}</label>
+          <select
+            id="output-mode"
+            data-testid="output-mode"
+            aria-describedby="output-mode-hint"
+            value={overlay ? CROSSPOINT_OVERLAY_METHOD : 'standard'}
+            onChange={(e) => dispatch({ type: 'setOutputMode', mode: e.currentTarget.value === CROSSPOINT_OVERLAY_METHOD ? CROSSPOINT_OVERLAY_METHOD : 'standard' })}
+          >
+            <option value="standard">{t('overlay.standard')}</option>
+            <option value={CROSSPOINT_OVERLAY_METHOD}>{t('method.crosspoint-overlay')}</option>
+          </select>
+          <p id="output-mode-hint" class="hint">{t(overlay ? 'overlay.backgroundHint' : 'overlay.standardHint')}</p>
+        </div>
+      )}
+      {!overlay && (
+        <label class="auto-card">
+          <input type="checkbox" checked={s.autoTone} data-testid="auto-tone" onChange={(e) => set({ autoTone: e.currentTarget.checked })} />
+          <span>
+            <strong>{t('settings.auto')}</strong>
+            <span class="hint">{t('settings.autoHint')}</span>
+          </span>
+        </label>
+      )}
 
       <details
         class="manual"
@@ -158,6 +180,7 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
         )}
       </div>
 
+      {!overlay && <>
       <Radios<TargetMode>
         name="target"
         legend={t('settings.size')}
@@ -179,6 +202,7 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
           <DimensionInput label={t('settings.height')} value={s.customHeight} testId="custom-height" onCommit={(v) => set({ customHeight: v })} />
         </div>
       )}
+      </>}
 
       <Radios<FitMode>
         name="fit"
@@ -193,9 +217,10 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
         onChange={(v) => set({ fit: v })}
       />
       <p class="hint" id="fit-help">
-        {t(`settings.fitHelp.${s.fit}` as TextKey)}
+        {t(fitHelp)}
       </p>
 
+      {!overlay && <>
       <div class="field">
         <span class="field-label" id="bg-label">
           {t('settings.background')}
@@ -300,6 +325,7 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, di
           <output for="jpeg-quality">{Math.round(s.jpegQuality * 100)}</output>
         </div>
       )}
+      </>}
         </div>
       </details>
     </section>

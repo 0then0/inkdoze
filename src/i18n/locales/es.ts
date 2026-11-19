@@ -78,6 +78,8 @@ export const es: Messages = {
   'install.sourceKind.community': 'Comunidad',
   'install.sourceKind.secondary': 'Secundaria',
 
+  'install.crosspointOverlay.copy': 'Copia {file} en la raíz de la tarjeta SD.',
+  'install.crosspointOverlay.mode': 'En {firmware}, abre {menu}. Elige {page} para mostrar la pantalla actual o {cover} para mostrar la portada del libro.',
   'install.crosspoint.mode': 'En el lector, abre {menu}.',
   'install.crosspoint.single': 'Copia el archivo en la raíz de la tarjeta SD como {file}. Tiene prioridad sobre las carpetas.',
   'install.crosspoint.multiple': 'Para ver una imagen al azar en cada reposo, pon varios archivos .bmp en {dir} (o {legacy}).',
@@ -126,6 +128,7 @@ export const es: Messages = {
   'install.remarkable.copy': 'Sustituye {file} por tu PNG.',
   'install.remarkable.restart': 'Ejecuta {command} o reinicia la tableta.',
 
+  'limit.crosspointOverlay.bmpPriority': 'Si {file} está en la raíz de la tarjeta SD, CrossPoint intenta abrirlo antes que el PNG.',
   'limit.crosspoint.bmpOnly': 'Para imágenes de reposo propias solo se lee BMP sin compresión, de hasta {max} píxeles.',
   'limit.crosspoint.firstSleep': 'El primer reposo con una imagen nueva tarda más mientras el firmware la convierte.',
   'limit.crosspoint.noPxc': 'Las imágenes de reposo en PXC solo existen en un pull request sin fusionar, no en ninguna versión de CrossPoint.',
@@ -268,6 +271,7 @@ export const es: Messages = {
 
   'device.ordinal': { other: '{n}.ª generación' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'Superposición de reposo de CrossPoint',
   'method.xteink-stock-official': 'Firmware original de Xteink',
   'method.xteink-stock-community': 'Firmware original de Xteink',
   'method.boox-screensaver': 'Firmware de BOOX',
@@ -284,4 +288,16 @@ export const es: Messages = {
   'method.nook-screensavers': 'Firmware de NOOK',
   'method.supernote-screensaver': 'Firmware de Supernote',
   'method.remarkable-ssh': 'reMarkable OS por SSH',
+
+  'overlay.transparent': 'Fondo transparente',
+  'overlay.mode': 'Modo de exportación',
+  'overlay.standard': 'Pantalla de reposo estándar',
+  'overlay.standardHint': 'Los píxeles transparentes y los márgenes vacíos se rellenan con el color de fondo elegido.',
+  'overlay.backgroundHint': 'El PNG conserva el canal alfa de la imagen y deja transparentes los márgenes vacíos. Sus dimensiones coinciden con las de la pantalla del lector.',
+  'overlay.previewNote': 'El navegador muestra el PNG sobre una página de prueba. CrossPoint 2.0.0 convierte los colores a escala de grises y usa un patrón de 4 × 4 píxeles para la transparencia parcial.',
+  'overlay.download': 'Descargar superposición',
+  'overlay.sampleTitle': 'Una mañana tranquila',
+  'overlay.sampleText': 'La habitación se llenó de luz poco a poco. Fuera, el primer tranvía cruzó la plaza. Ella dejó la taza sobre la mesa, pasó la página y siguió leyendo.',
+  'overlay.fitHelp.fit': 'Se muestra la imagen completa. Los márgenes vacíos quedan transparentes.',
+  'overlay.fitHelp.fill': 'La imagen se escala y se recorta hasta los bordes de la pantalla, conservando su transparencia.',
 };

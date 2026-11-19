@@ -18,9 +18,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /mobile\.spec\.ts/ },
-    // HEIC decoding differs by engine: Firefox has no HEIC decoder; WebKit uses the system one on macOS.
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: /heic\.spec\.ts/ },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /heic\.spec\.ts/ },
+    // HEIC decoding and premultiplied alpha rendering differ by engine.
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: /(?:heic|overlay)\.spec\.ts/ },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /(?:heic|overlay)\.spec\.ts/ },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: {

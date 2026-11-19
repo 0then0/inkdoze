@@ -4,7 +4,7 @@ import type { Device, InstallMethod } from '../src/catalog/types.ts';
 import { validateCatalog } from '../src/catalog/validate.ts';
 import { isMessageKey } from '../src/i18n/index.ts';
 
-const TODAY = '2026-11-14';
+const TODAY = '2026-11-19';
 const validate = (devices: readonly Device[], methods: Record<string, InstallMethod> = INSTALL_METHODS) =>
   validateCatalog(devices, methods, isMessageKey, TODAY);
 
@@ -63,6 +63,19 @@ describe('catalog data', () => {
   it('only offers CrossPoint on devices with a CrossPoint 2.0.0 build', () => {
     const withCrossPoint = DEVICES.filter((d) => d.install.includes('crosspoint')).map((d) => d.id).sort();
     expect(withCrossPoint).toEqual(['boox-picco', 'xteink-x3', 'xteink-x4', 'xteink-x4-classic', 'xteink-x4-pro']);
+  });
+
+  it('offers a separate PNG overlay for devices with CrossPoint 2.0.0', () => {
+    const devices = DEVICES.filter((d) => d.install.includes('crosspoint-overlay'));
+    expect(devices.map((d) => d.id)).toEqual(DEVICES.filter((d) => d.install.includes('crosspoint')).map((d) => d.id));
+    expect(devices.every((d) => d.install[0] === 'crosspoint')).toBe(true);
+    expect(INSTALL_METHODS['crosspoint-overlay']).toMatchObject({
+      software: 'CrossPoint 2.0.0',
+      formats: ['png'],
+      recommendedFormat: 'png',
+      fileName: 'sleep-overlay',
+    });
+    expect(INSTALL_METHODS.crosspoint.recommendedFormat).toBe('bmp24');
   });
 
   it('never offers PXC for released firmware', () => {

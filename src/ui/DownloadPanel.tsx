@@ -17,13 +17,15 @@ interface Props {
   message: string | null;
   /** Offer an EPUB with the image as its cover (install methods that only show book covers). */
   epub: boolean;
+  overlay: boolean;
+  waitingForPreview: boolean;
   onOne: () => void;
   onEpub: () => void;
   onAll: () => void;
   onCancel: () => void;
 }
 
-export function DownloadPanel({ selected, fileName, summary, readyCount, progress, message, epub, onOne, onEpub, onAll, onCancel }: Props) {
+export function DownloadPanel({ selected, fileName, summary, readyCount, progress, message, epub, overlay, waitingForPreview, onOne, onEpub, onAll, onCancel }: Props) {
   const { t } = useI18n();
   const busy = progress !== null;
   return (
@@ -60,14 +62,16 @@ export function DownloadPanel({ selected, fileName, summary, readyCount, progres
         </div>
       )}
       <div class="download-buttons">
-        <button type="button" class={epub ? 'button' : 'button primary'} disabled={busy || selected?.status !== 'ready'} onClick={onOne} data-testid="download-one">
+        <button type="button" class={epub ? 'button' : 'button primary'} disabled={busy || waitingForPreview || selected?.status !== 'ready'} onClick={onOne} data-testid="download-one">
           <Icon name="download" />
-          {t('download.one')}
+          {t(overlay ? 'overlay.download' : 'download.one')}
         </button>
-        <button type="button" class="button" disabled={busy || readyCount === 0} onClick={onAll} data-testid="download-all">
-          <Icon name="download" />
-          {readyCount > 1 ? t('download.all', { count: readyCount }) : t('download.allOne')}
-        </button>
+        {!overlay && (
+          <button type="button" class="button" disabled={busy || readyCount === 0} onClick={onAll} data-testid="download-all">
+            <Icon name="download" />
+            {readyCount > 1 ? t('download.all', { count: readyCount }) : t('download.allOne')}
+          </button>
+        )}
       </div>
       {progress && (
         <div class="progress" role="status">

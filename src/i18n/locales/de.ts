@@ -78,6 +78,8 @@ export const de: Messages = {
   'install.sourceKind.community': 'Community',
   'install.sourceKind.secondary': 'Sekundär',
 
+  'install.crosspointOverlay.copy': 'Kopiere {file} ins Stammverzeichnis der SD-Karte.',
+  'install.crosspointOverlay.mode': 'Öffne in {firmware} das Menü {menu}. Wähle {page} für den aktuellen Bildschirminhalt oder {cover} für das Buchcover.',
   'install.crosspoint.mode': 'Öffne auf dem Reader {menu}.',
   'install.crosspoint.single': 'Kopiere die Datei als {file} ins Stammverzeichnis der SD-Karte. Sie hat Vorrang vor Ordnern.',
   'install.crosspoint.multiple': 'Für ein zufälliges Bild bei jedem Ruhezustand lege mehrere .bmp-Dateien in {dir} (oder {legacy}).',
@@ -126,6 +128,7 @@ export const de: Messages = {
   'install.remarkable.copy': 'Ersetze {file} durch dein PNG.',
   'install.remarkable.restart': 'Führe {command} aus oder starte das Tablet neu.',
 
+  'limit.crosspointOverlay.bmpPriority': 'Liegt {file} im Stammverzeichnis der SD-Karte, versucht CrossPoint, diese Datei vor der PNG-Datei zu laden.',
   'limit.crosspoint.bmpOnly': 'Für eigene Ruhebilder wird nur unkomprimiertes BMP bis {max} Pixel gelesen.',
   'limit.crosspoint.firstSleep': 'Der erste Ruhezustand mit einem neuen Bild dauert länger, weil die Firmware es umwandelt.',
   'limit.crosspoint.noPxc': 'PXC-Ruhebilder gibt es nur in einem nicht gemergten Pull Request, in keinem CrossPoint-Release.',
@@ -268,6 +271,7 @@ export const de: Messages = {
 
   'device.ordinal': { other: '{n}. Generation' },
   'method.crosspoint': 'CrossPoint 2.0.0',
+  'method.crosspoint-overlay': 'CrossPoint-Overlay im Ruhezustand',
   'method.xteink-stock-official': 'Xteink-Original-Firmware',
   'method.xteink-stock-community': 'Xteink-Original-Firmware',
   'method.boox-screensaver': 'BOOX-Firmware',
@@ -284,4 +288,16 @@ export const de: Messages = {
   'method.nook-screensavers': 'NOOK-Firmware',
   'method.supernote-screensaver': 'Supernote-Firmware',
   'method.remarkable-ssh': 'reMarkable OS per SSH',
+
+  'overlay.transparent': 'Transparenter Hintergrund',
+  'overlay.mode': 'Ausgabemodus',
+  'overlay.standard': 'Normaler Ruhebildschirm',
+  'overlay.standardHint': 'Transparente Pixel und freie Ränder werden mit der gewählten Hintergrundfarbe gefüllt.',
+  'overlay.backgroundHint': 'Das PNG behält den Alphakanal des Bildes bei. Freie Ränder bleiben transparent. Die Bildgröße entspricht der Bildschirmauflösung des Geräts.',
+  'overlay.previewNote': 'Der Browser legt das PNG über eine Beispielseite. CrossPoint 2.0.0 wandelt Farben in Graustufen um und stellt Teiltransparenz mit einem 4 × 4 Pixelmuster dar.',
+  'overlay.download': 'Overlay herunterladen',
+  'overlay.sampleTitle': 'Ein ruhiger Morgen',
+  'overlay.sampleText': 'Der Raum füllte sich langsam mit Licht. Draußen fuhr die erste Straßenbahn über den Platz. Sie stellte ihre Tasse ab, blätterte um und las weiter.',
+  'overlay.fitHelp.fit': 'Das ganze Bild bleibt sichtbar. Freie Ränder bleiben transparent.',
+  'overlay.fitHelp.fill': 'Das Bild wird bis zu den Bildschirmrändern skaliert und zugeschnitten. Die Transparenz bleibt erhalten.',
 };
