@@ -78,7 +78,8 @@ export const ja: Messages = {
   'install.sourceKind.community': 'コミュニティ',
   'install.sourceKind.secondary': '二次情報',
 
-  'install.crosspointOverlay.copy': '{file} を SD カードのルートにコピーします。',
+  'install.crosspointOverlay.extract': '複数のオーバーレイを使う場合は、ZIP を SD カードのルートに展開します。スリープに入るたびに、CrossPoint が {dir} フォルダーからオーバーレイをランダムに選びます。',
+  'install.crosspointOverlay.copy': 'オーバーレイを 1 枚だけ使う場合は、{file} を SD カードのルートにコピーします。',
   'install.crosspointOverlay.mode': '{firmware} で {menu} を開きます。現在の画面に重ねるには {page}、本の表紙に重ねるには {cover} を選びます。',
   'install.crosspoint.mode': 'リーダーで {menu} を開きます。',
   'install.crosspoint.single': 'ファイルを {file} という名前で SD カードのルートにコピーします。フォルダーより優先されます。',
@@ -128,7 +129,7 @@ export const ja: Messages = {
   'install.remarkable.copy': '作成した PNG で {file} を置き換えます。',
   'install.remarkable.restart': '{command} を実行するか、タブレットを再起動します。',
 
-  'limit.crosspointOverlay.bmpPriority': 'SD カードのルートに {file} がある場合、CrossPoint は PNG より先にそのファイルの読み込みを試みます。',
+  'limit.crosspointOverlay.priority': 'SD カードのルートにある {bmp} と {png} はフォルダーより優先されます。CrossPoint は最初に BMP の読み込みを試みます。',
   'limit.crosspoint.bmpOnly': '独自のスリープ画像として読み込めるのは、{max} ピクセルまでの非圧縮 BMP のみです。',
   'limit.crosspoint.firstSleep': '新しい画像で初めてスリープするときは、ファームウェアの変換処理のため時間がかかります。',
   'limit.crosspoint.noPxc': 'PXC 形式のスリープ画像は未マージのプルリクエストにのみ存在し、CrossPoint のリリースには含まれていません。',
@@ -296,6 +297,7 @@ export const ja: Messages = {
   'overlay.backgroundHint': 'PNG は画像のアルファチャンネルを保持し、余白を透明なままにします。出力サイズはリーダーの画面解像度に合わせます。',
   'overlay.previewNote': 'ブラウザーではサンプルページに PNG を重ねて表示します。CrossPoint 2.0.0 は色をグレースケールに変換し、半透明を 4 × 4 ピクセルのパターンで表現します。',
   'overlay.download': 'オーバーレイをダウンロード',
+  'overlay.downloadZip': 'オーバーレイの ZIP をダウンロード',
   'overlay.sampleTitle': '静かな朝',
   'overlay.sampleText': '部屋に少しずつ光が差し込んだ。窓の外では始発の路面電車が広場を横切った。彼女はカップを置き、ページをめくって読書を続けた。',
   'overlay.fitHelp.fit': '画像全体を表示し、余白は透明のままにします。',

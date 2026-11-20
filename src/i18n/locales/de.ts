@@ -78,7 +78,8 @@ export const de: Messages = {
   'install.sourceKind.community': 'Community',
   'install.sourceKind.secondary': 'Sekundär',
 
-  'install.crosspointOverlay.copy': 'Kopiere {file} ins Stammverzeichnis der SD-Karte.',
+  'install.crosspointOverlay.extract': 'Für mehrere Overlays entpacke die ZIP-Datei ins Stammverzeichnis der SD-Karte. CrossPoint wählt beim Wechsel in den Ruhezustand zufällig ein Overlay aus {dir}.',
+  'install.crosspointOverlay.copy': 'Für ein einzelnes Overlay kopiere {file} ins Stammverzeichnis der SD-Karte.',
   'install.crosspointOverlay.mode': 'Öffne in {firmware} das Menü {menu}. Wähle {page} für den aktuellen Bildschirminhalt oder {cover} für das Buchcover.',
   'install.crosspoint.mode': 'Öffne auf dem Reader {menu}.',
   'install.crosspoint.single': 'Kopiere die Datei als {file} ins Stammverzeichnis der SD-Karte. Sie hat Vorrang vor Ordnern.',
@@ -128,7 +129,7 @@ export const de: Messages = {
   'install.remarkable.copy': 'Ersetze {file} durch dein PNG.',
   'install.remarkable.restart': 'Führe {command} aus oder starte das Tablet neu.',
 
-  'limit.crosspointOverlay.bmpPriority': 'Liegt {file} im Stammverzeichnis der SD-Karte, versucht CrossPoint, diese Datei vor der PNG-Datei zu laden.',
+  'limit.crosspointOverlay.priority': 'Die Dateien {bmp} und {png} im Stammverzeichnis der SD-Karte haben Vorrang vor dem Ordner. CrossPoint versucht zuerst, die BMP-Datei zu laden.',
   'limit.crosspoint.bmpOnly': 'Für eigene Ruhebilder wird nur unkomprimiertes BMP bis {max} Pixel gelesen.',
   'limit.crosspoint.firstSleep': 'Der erste Ruhezustand mit einem neuen Bild dauert länger, weil die Firmware es umwandelt.',
   'limit.crosspoint.noPxc': 'PXC-Ruhebilder gibt es nur in einem nicht gemergten Pull Request, in keinem CrossPoint-Release.',
@@ -296,6 +297,7 @@ export const de: Messages = {
   'overlay.backgroundHint': 'Das PNG behält den Alphakanal des Bildes bei. Freie Ränder bleiben transparent. Die Bildgröße entspricht der Bildschirmauflösung des Geräts.',
   'overlay.previewNote': 'Der Browser legt das PNG über eine Beispielseite. CrossPoint 2.0.0 wandelt Farben in Graustufen um und stellt Teiltransparenz mit einem 4 × 4 Pixelmuster dar.',
   'overlay.download': 'Overlay herunterladen',
+  'overlay.downloadZip': 'Overlay-ZIP herunterladen',
   'overlay.sampleTitle': 'Ein ruhiger Morgen',
   'overlay.sampleText': 'Der Raum füllte sich langsam mit Licht. Draußen fuhr die erste Straßenbahn über den Platz. Sie stellte ihre Tasse ab, blätterte um und las weiter.',
   'overlay.fitHelp.fit': 'Das ganze Bild bleibt sichtbar. Freie Ränder bleiben transparent.',

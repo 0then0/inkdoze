@@ -82,7 +82,8 @@ export const en = {
   'install.sourceKind.community': 'Community',
   'install.sourceKind.secondary': 'Secondary',
 
-  'install.crosspointOverlay.copy': 'Copy {file} to the root of the SD card.',
+  'install.crosspointOverlay.extract': 'For a batch, extract the ZIP to the root of the SD card. CrossPoint picks an overlay from {dir} at random each time the reader sleeps.',
+  'install.crosspointOverlay.copy': 'For a single overlay, copy {file} to the root of the SD card.',
   'install.crosspointOverlay.mode': 'In {firmware}, open {menu}. Choose {page} for the current screen or {cover} for the book cover.',
   'install.crosspoint.mode': 'On the reader, open {menu}.',
   'install.crosspoint.single': 'Copy the file to the root of the SD card as {file}. It takes priority over folders.',
@@ -132,7 +133,7 @@ export const en = {
   'install.remarkable.copy': 'Copy your PNG over {file}.',
   'install.remarkable.restart': 'Run {command} or restart the tablet.',
 
-  'limit.crosspointOverlay.bmpPriority': 'If {file} is in the root of the SD card, CrossPoint tries it before the PNG.',
+  'limit.crosspointOverlay.priority': 'In the root of the SD card, {bmp} and {png} take priority over the folder. CrossPoint tries the BMP first.',
   'limit.crosspoint.bmpOnly': 'Only uncompressed BMP is read for custom sleep images, up to {max} pixels.',
   'limit.crosspoint.firstSleep': 'The first sleep with a new image takes longer while the firmware converts it.',
   'limit.crosspoint.noPxc': 'PXC sleep images exist only in an unmerged pull request, not in any CrossPoint release.',
@@ -299,6 +300,7 @@ export const en = {
   'overlay.backgroundHint': 'PNG preserves the image’s alpha channel and leaves empty margins transparent. The file matches the reader’s screen size.',
   'overlay.previewNote': 'The browser shows the PNG over a sample page. CrossPoint 2.0.0 converts colors to grayscale and uses a 4 × 4 pixel pattern for partial transparency.',
   'overlay.download': 'Download overlay',
+  'overlay.downloadZip': 'Download overlay ZIP',
   'overlay.sampleTitle': 'A quiet morning',
   'overlay.sampleText': 'The room slowly filled with light. Outside, the first tram crossed the square. She set her cup down, turned a page and kept reading.',
   'overlay.fitHelp.fit': 'Keeps the whole image visible. Empty margins stay transparent.',

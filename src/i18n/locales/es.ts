@@ -78,7 +78,8 @@ export const es: Messages = {
   'install.sourceKind.community': 'Comunidad',
   'install.sourceKind.secondary': 'Secundaria',
 
-  'install.crosspointOverlay.copy': 'Copia {file} en la raíz de la tarjeta SD.',
+  'install.crosspointOverlay.extract': 'Para usar varias superposiciones, extrae el ZIP en la raíz de la tarjeta SD. Cada vez que el lector entra en reposo, CrossPoint elige una superposición al azar de la carpeta {dir}.',
+  'install.crosspointOverlay.copy': 'Para usar una sola superposición, copia {file} en la raíz de la tarjeta SD.',
   'install.crosspointOverlay.mode': 'En {firmware}, abre {menu}. Elige {page} para mostrar la pantalla actual o {cover} para mostrar la portada del libro.',
   'install.crosspoint.mode': 'En el lector, abre {menu}.',
   'install.crosspoint.single': 'Copia el archivo en la raíz de la tarjeta SD como {file}. Tiene prioridad sobre las carpetas.',
@@ -128,7 +129,7 @@ export const es: Messages = {
   'install.remarkable.copy': 'Sustituye {file} por tu PNG.',
   'install.remarkable.restart': 'Ejecuta {command} o reinicia la tableta.',
 
-  'limit.crosspointOverlay.bmpPriority': 'Si {file} está en la raíz de la tarjeta SD, CrossPoint intenta abrirlo antes que el PNG.',
+  'limit.crosspointOverlay.priority': 'Los archivos {bmp} y {png} de la raíz de la tarjeta SD tienen prioridad sobre la carpeta. CrossPoint intenta abrir primero el BMP.',
   'limit.crosspoint.bmpOnly': 'Para imágenes de reposo propias solo se lee BMP sin compresión, de hasta {max} píxeles.',
   'limit.crosspoint.firstSleep': 'El primer reposo con una imagen nueva tarda más mientras el firmware la convierte.',
   'limit.crosspoint.noPxc': 'Las imágenes de reposo en PXC solo existen en un pull request sin fusionar, no en ninguna versión de CrossPoint.',
@@ -296,6 +297,7 @@ export const es: Messages = {
   'overlay.backgroundHint': 'El PNG conserva el canal alfa de la imagen y deja transparentes los márgenes vacíos. Sus dimensiones coinciden con las de la pantalla del lector.',
   'overlay.previewNote': 'El navegador muestra el PNG sobre una página de prueba. CrossPoint 2.0.0 convierte los colores a escala de grises y usa un patrón de 4 × 4 píxeles para la transparencia parcial.',
   'overlay.download': 'Descargar superposición',
+  'overlay.downloadZip': 'Descargar ZIP de superposiciones',
   'overlay.sampleTitle': 'Una mañana tranquila',
   'overlay.sampleText': 'La habitación se llenó de luz poco a poco. Fuera, el primer tranvía cruzó la plaza. Ella dejó la taza sobre la mesa, pasó la página y siguió leyendo.',
   'overlay.fitHelp.fit': 'Se muestra la imagen completa. Los márgenes vacíos quedan transparentes.',

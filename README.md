@@ -27,7 +27,7 @@ That is the whole workflow. **Automatic e-ink adjustment** is on by default: for
 
 **How to install** explains whether the selected model can show your own image at all, which firmware or app that needs, and the file name to use. Everything else is optional: crop, rotate, zoom and position an image under the preview, or open **Manual settings** for size, framing, background, tone, gray levels, dithering and format. **Apply changes to** decides whether a manual setting affects all images or only the selected one.
 
-For a transparent PNG on CrossPoint 2.0.0, follow the [sleep overlay steps](#crosspoint-sleep-overlay).
+For transparent overlays on CrossPoint 2.0.0, follow the [sleep overlay steps](#crosspoint-sleep-overlay).
 
 Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 px per side.
 
@@ -39,7 +39,7 @@ Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 
 - **Tone.** Automatic per-image adjustment for e-ink (levels stretch with a capped gain and a midtone curve, measured on the visible part of the image only). Manual colour or grayscale, brightness and contrast on top of it, invert, 256/16/4/2 gray levels and Floyd–Steinberg or Atkinson dithering.
 - **Same pipeline for preview and export.** The preview is rendered at full output resolution by the same code that writes the file. The optional e-ink simulation is labelled as an approximation.
 - **Formats.** PNG, JPEG and uncompressed BMP at 24, 8, 4, 2 and 1 bit. The recommended format and file name come from the selected install method.
-- **CrossPoint sleep overlay.** Place one image with transparency on a test reading page and export it as `sleep-overlay.png` at the reader’s screen size.
+- **CrossPoint sleep overlay.** Preview transparent images over a test reading page and download `sleep-overlay.png` or a ZIP with a `.sleep-overlay/` folder. Each PNG matches the reader’s screen size.
 - **EPUB for Kindle Display Cover.** For ad-free Kindles on stock firmware, which can only show the cover of a book, **Download EPUB for Kindle** packs the selected image, rendered exactly as the image export, into an EPUB 3 book with that image as its cover. One image per book; batches are not packed into EPUBs.
 - **HEIC photos.** Still HEIC photos in the layout iPhones write are decoded on the device: by the browser where it can (Safari), otherwise by a WebAssembly build of libheif that ships with InkDoze. See [HEIC photos](#heic-photos).
 - **Batches.** Drag and drop or pick several PNG, JPEG, WebP and HEIC files, rename outputs, give single images their own settings, download one file or a ZIP of all. Work runs in a Web Worker with bounded concurrency and can be cancelled.
@@ -59,7 +59,7 @@ Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 
 | Bookeen | 8 | 2004–2014 | Size only (Cybook) |
 | NOOK | 7 | 2011–2023 | Screensavers folder on early models; size only on later ones |
 | reMarkable | 5 | 2017–2026 | Community SSH method |
-| Xteink | 4 | 2025–2026 | CrossPoint `sleep.bmp` and `sleep-overlay.png`; stock wallpaper |
+| Xteink | 4 | 2025–2026 | CrossPoint `sleep.bmp`, `sleep-overlay.png` and `.sleep-overlay/`; stock wallpaper |
 | Supernote | 4 | 2020–2024 | Custom image (Settings › Display & Input › Screensaver) |
 | 24 other brands | 43 | 2006–2025 | Size only (Bigme, Meebook, Likebook, Boyue, Hanlin, Hanvon, iRex, Icarus and others) |
 
@@ -87,10 +87,12 @@ The book holds a `mimetype` entry stored first, `META-INF/container.xml`, an EPU
 
 ### CrossPoint sleep overlay
 
-1. Add an image with transparency, choose your reader and select **CrossPoint sleep overlay**.
-2. Crop, rotate, scale or position the image against the test reading page. Empty areas stay transparent. The downloaded PNG contains only the overlay, at the reader’s screen size.
-3. Download `sleep-overlay.png` and copy it to the root of the SD card. A valid `sleep-overlay.bmp` in the root takes priority if both files are present.
-4. On CrossPoint 2.0.0, open **Settings › Display › Sleep Screen** and choose **Transparent** to overlay the current screen or **Cover + Transparent** to overlay the book cover. [CrossPoint 2.0.0 User Guide](https://github.com/crosspoint-reader/crosspoint-reader/blob/2.0.0/USER_GUIDE.md#transparent-overlay-images)
+1. Add your images, choose your reader and select **CrossPoint sleep overlay**.
+2. Crop, rotate, scale or position each image against the test reading page. Each exported PNG contains only the overlay at the reader’s screen size, with empty areas kept transparent.
+3. Select **Download overlay ZIP** and extract the ZIP to the root of the SD card so the PNGs are directly inside `/.sleep-overlay/`. For a single overlay, select **Download overlay** and copy `sleep-overlay.png` to the root of the card.
+4. On CrossPoint 2.0.0, open **Settings › Display › Sleep Screen**. Choose **Transparent** to overlay the current screen or **Cover + Transparent** to overlay the cover of the last opened book.
+
+CrossPoint picks an overlay from the folder at random each time the reader sleeps. To use the folder, move any `sleep-overlay.bmp` or `sleep-overlay.png` out of the SD card root. Both files take priority over the folder, with BMP checked first. [CrossPoint 2.0.0 User Guide](https://github.com/crosspoint-reader/crosspoint-reader/blob/2.0.0/USER_GUIDE.md#transparent-overlay-images)
 
 The browser preview blends the PNG over the test page. On the reader, transparent pixels leave the screen untouched and opaque white pixels cover the content behind them. CrossPoint skips alpha values below 8 (out of 255) and uses a 4 × 4 ordered pattern to decide where to draw partially transparent pixels. Firmware behavior was checked against the 2.0.0 source. Testing on a physical reader is pending. [CrossPoint PNG renderer](https://github.com/crosspoint-reader/crosspoint-reader/blob/2.0.0/lib/Epub/Epub/converters/PngToFramebufferConverter.cpp#L280-L298), [PNG overlay PR](https://github.com/crosspoint-reader/crosspoint-reader/pull/2974)
 

@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Batch export for CrossPoint 2.0.0 sleep overlays. The ZIP contains transparent PNGs in `.sleep-overlay/`, ready to extract to the SD card root. Each PNG uses the selected reader’s screen size and the image’s own framing settings.
+
 ## [0.3.0] - 2026-11-19
 
 ### Added

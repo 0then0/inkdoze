@@ -1,7 +1,7 @@
 import { crc32 as nodeCrc32 } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { createZip, crc32 } from '../src/formats/zip.ts';
-import { sanitizeBaseName, stripExtension, uniqueNames } from '../src/io/names.ts';
+import { overlayZipNames, sanitizeBaseName, stripExtension, uniqueNames } from '../src/io/names.ts';
 import { probeBlob, probeImage } from '../src/io/probe.ts';
 import { AbortedError, TaskQueue, isAbort } from '../src/io/queue.ts';
 
@@ -86,6 +86,23 @@ describe('file names', () => {
 
   it('makes names unique case-insensitively', () => {
     expect(uniqueNames(['a.png', 'A.png', 'a.png', 'a-2.png', 'b.png'])).toEqual(['a.png', 'A-2.png', 'a-3.png', 'a-2-2.png', 'b.png']);
+  });
+
+  it('puts safe, normalized and case-insensitively unique overlay PNG names in one directory', () => {
+    expect(overlayZipNames([
+      'Café.PNG', 'CAFE\u0301.webp', 'Café-2.jpg', 'σ.png', 'ς.png', '../art\\winter?.jpg', 'CON.backup.png', 'LPT².jpg',
+    ])).toEqual([
+      '.sleep-overlay/Café.png', '.sleep-overlay/CAFÉ-2.png', '.sleep-overlay/Café-2-2.png', '.sleep-overlay/σ.png',
+      '.sleep-overlay/ς-2.png', '.sleep-overlay/art-winter-.png', '.sleep-overlay/image.png', '.sleep-overlay/image-2.png',
+    ]);
+  });
+
+  it('keeps multibyte overlay filenames and their collision suffixes inside the firmware buffer', () => {
+    const long = '雪'.repeat(85);
+    const stem = '雪'.repeat(83);
+    const paths = overlayZipNames([`${long}a.png`, `${long}b.jpg`]);
+    expect(paths).toEqual([`.sleep-overlay/${stem}.png`, `.sleep-overlay/${stem}-2.png`]);
+    expect(Buffer.byteLength(paths[1]!.split('/')[1]!)).toBe(255);
   });
 });
 

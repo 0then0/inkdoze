@@ -78,7 +78,8 @@ export const ptBR: Messages = {
   'install.sourceKind.community': 'Comunidade',
   'install.sourceKind.secondary': 'Secundária',
 
-  'install.crosspointOverlay.copy': 'Copie {file} para a raiz do cartão SD.',
+  'install.crosspointOverlay.extract': 'Para usar várias sobreposições, extraia o ZIP na raiz do cartão SD. Sempre que o leitor entra em repouso, o CrossPoint escolhe uma sobreposição aleatória da pasta {dir}.',
+  'install.crosspointOverlay.copy': 'Para usar uma única sobreposição, copie {file} para a raiz do cartão SD.',
   'install.crosspointOverlay.mode': 'No {firmware}, abra {menu}. Escolha {page} para a tela atual ou {cover} para a capa do livro.',
   'install.crosspoint.mode': 'No leitor, abra {menu}.',
   'install.crosspoint.single': 'Copie o arquivo para a raiz do cartão SD com o nome {file}. Ele tem prioridade sobre as pastas.',
@@ -128,7 +129,7 @@ export const ptBR: Messages = {
   'install.remarkable.copy': 'Substitua {file} pelo seu PNG.',
   'install.remarkable.restart': 'Execute {command} ou reinicie o tablet.',
 
-  'limit.crosspointOverlay.bmpPriority': 'Se {file} estiver na raiz do cartão SD, o CrossPoint tenta abri-lo antes do PNG.',
+  'limit.crosspointOverlay.priority': 'Os arquivos {bmp} e {png} na raiz do cartão SD têm prioridade sobre a pasta. O CrossPoint tenta abrir o BMP primeiro.',
   'limit.crosspoint.bmpOnly': 'Para imagens de descanso próprias, só BMP sem compressão de até {max} pixels é lido.',
   'limit.crosspoint.firstSleep': 'O primeiro descanso com uma imagem nova demora mais enquanto o firmware a converte.',
   'limit.crosspoint.noPxc': 'Telas de descanso em PXC só existem em um pull request não incorporado, em nenhuma versão do CrossPoint.',
@@ -296,6 +297,7 @@ export const ptBR: Messages = {
   'overlay.backgroundHint': 'O PNG preserva o canal alfa da imagem e mantém as margens vazias transparentes. Suas dimensões correspondem à resolução da tela do leitor.',
   'overlay.previewNote': 'O navegador exibe o PNG sobre uma página de teste. O CrossPoint 2.0.0 converte as cores para tons de cinza e usa um padrão de 4 × 4 pixels para a transparência parcial.',
   'overlay.download': 'Baixar sobreposição',
+  'overlay.downloadZip': 'Baixar ZIP de sobreposições',
   'overlay.sampleTitle': 'Uma manhã tranquila',
   'overlay.sampleText': 'A luz foi tomando conta do quarto. Lá fora, o primeiro bonde atravessou a praça. Ela pousou a xícara, virou a página e continuou a ler.',
   'overlay.fitHelp.fit': 'A imagem inteira fica visível. As margens vazias permanecem transparentes.',

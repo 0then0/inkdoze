@@ -1,6 +1,6 @@
 import { inflateSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
-import { addFiles, decodeInPage, downloadBytes, expectGray, makePng, waitReady, type Rgba } from './helpers.ts';
+import { addFiles, decodeInPage, downloadBytes, expectGray, makePng, readZip, waitReady, type Rgba } from './helpers.ts';
 
 type PreviewTestWindow = Window & { testPngs: Map<string, Blob> };
 
@@ -126,8 +126,9 @@ test('CrossPoint PNG keeps the placed alpha, matches the preview and restores st
   await mode.selectOption('crosspoint-overlay');
   await expect(page.getByTestId('overlay-preview-page')).toBeVisible();
   await expect(page.getByTestId('install-method')).toHaveAttribute('data-method', 'crosspoint-overlay');
+  await expect(page.getByTestId('install-method')).toContainText('/.sleep-overlay/');
   await expect(page.getByTestId('install-method')).toContainText('sleep-overlay.bmp');
-  await expect(page.getByTestId('download-all')).toHaveCount(0);
+  await expect(page.getByTestId('download-all')).toBeEnabled();
   await expect(page.getByTestId('auto-tone')).toHaveCount(0);
   await positionOverlay(page);
   const { name, bytes } = await downloadOne(page);
@@ -181,6 +182,62 @@ test('CrossPoint PNG keeps the placed alpha, matches the preview and restores st
   expect(decoded.at(160, 90)[3]).toBe(255);
   expect(decoded.at(160, 150)[3]).toBe(255);
   expect(decoded.at(160, 195)).toEqual([255, 255, 255, 255]);
+});
+
+test('overlay ZIP contains ready images with unique names and their individual framing', async ({ page }) => {
+  const source = fixture([255, 0, 0, 0]);
+  await addFiles(page, [source, { ...source, name: 'ALPHA.PNG' }, { ...source, name: 'detail.png' }, { ...source, name: 'broken.png', buffer: Buffer.from([0]) }]);
+  await waitReady(page, 3);
+  await expect(page.locator('.file-item[data-status="error"]')).toHaveCount(1);
+  await page.getByTestId('output-mode').selectOption('crosspoint-overlay');
+  await page.getByRole('radio', { name: 'Fit', exact: true }).check({ force: true });
+
+  await page.getByRole('button', { name: 'Select detail.png', exact: true }).click();
+  await page.getByRole('button', { name: 'Crop', exact: true }).click();
+  await page.getByTestId('crop-rect').press('ArrowRight');
+  await page.getByTestId('crop-apply').click();
+  await expect(page.locator('.file-item.selected')).toContainText('Cropped');
+  await positionOverlay(page);
+  const single = decodeRgbaPng((await downloadOne(page)).bytes);
+
+  const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download overlay ZIP' }).click()]);
+  expect(download.suggestedFilename()).toBe('inkdoze-xteink-x4-overlays.zip');
+  const files = readZip(await downloadBytes(download));
+  expect(files.map(({ name }) => name)).toEqual(['.sleep-overlay/alpha.png', '.sleep-overlay/ALPHA-2.png', '.sleep-overlay/detail.png']);
+  const pngs = files.map(({ data }) => decodeRgbaPng(data));
+  for (const png of pngs) expect([png.width, png.height]).toEqual([480, 800]);
+  const [first, second, detail] = pngs;
+  expect(first!.at(10, 10)).toEqual([0, 0, 0, 0]);
+  expect(first!.at(240, 400)[3]).toBe(128);
+  expect(first!.at(440, 400)).toEqual([255, 255, 255, 255]);
+  expect(second!.rgba.equals(first!.rgba)).toBe(true);
+  expect(detail!.rgba.equals(first!.rgba)).toBe(false);
+  expect(detail!.rgba.equals(single.rgba)).toBe(true);
+});
+
+test('overlay ZIP reports failures when no ready image can be rendered', async ({ page }) => {
+  const source = fixture([255, 0, 0, 0]);
+  await addFiles(page, [source, { ...source, name: 'other.png' }]);
+  await waitReady(page, 2);
+  await page.getByTestId('output-mode').selectOption('crosspoint-overlay');
+  await expect(page.getByTestId('download-one')).toBeEnabled();
+  await page.evaluate(() => {
+    const send = Worker.prototype.postMessage;
+    let remaining = 2;
+    Worker.prototype.postMessage = function (this: Worker, request: { type: string }, ...args: unknown[]) {
+      if (request.type !== 'export') return Reflect.apply(send, this, [request, ...args]);
+      if (--remaining === 0) Worker.prototype.postMessage = send;
+      return Reflect.apply(send, this, [{ ...request, imageId: 'missing' }, ...args]);
+    };
+  });
+
+  const downloads: string[] = [];
+  page.on('download', (download) => downloads.push(download.suggestedFilename()));
+  const batch = page.getByTestId('download-all');
+  await batch.click();
+  await expect(page.getByTestId('download-message')).toHaveText('2 images failed and were skipped.');
+  await Promise.all([page.waitForEvent('download'), batch.click()]);
+  expect(downloads).toEqual(['inkdoze-xteink-x4-overlays.zip']);
 });
 
 test('a failed overlay preview does not show the previously selected image', async ({ page }) => {

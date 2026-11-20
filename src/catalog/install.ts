@@ -62,15 +62,16 @@ export const INSTALL_METHODS: Record<InstallMethodId, InstallMethod> = {
     recommendedFormat: 'png',
     fileName: 'sleep-overlay',
     steps: [
+      { key: 'install.crosspointOverlay.extract', params: { dir: '/.sleep-overlay/' } },
       { key: 'install.crosspointOverlay.copy', params: { file: 'sleep-overlay.png' } },
       {
         key: 'install.crosspointOverlay.mode',
         params: { firmware: 'CrossPoint 2.0.0', menu: 'Settings › Display › Sleep Screen', page: 'Transparent', cover: 'Cover + Transparent' },
       },
     ],
-    limitations: [{ key: 'limit.crosspointOverlay.bmpPriority', params: { file: 'sleep-overlay.bmp' } }],
+    limitations: [{ key: 'limit.crosspointOverlay.priority', params: { bmp: 'sleep-overlay.bmp', png: 'sleep-overlay.png' } }],
     sources: [SRC.crosspointOverlayGuide, SRC.crosspointSleep, SRC.crosspointOverlayPng, SRC.crosspointOverlayPr],
-    verified: '2026-11-19',
+    verified: '2026-11-20',
   },
   'xteink-stock-official': {
     id: 'xteink-stock-official',

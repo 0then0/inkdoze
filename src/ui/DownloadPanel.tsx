@@ -66,12 +66,10 @@ export function DownloadPanel({ selected, fileName, summary, readyCount, progres
           <Icon name="download" />
           {t(overlay ? 'overlay.download' : 'download.one')}
         </button>
-        {!overlay && (
-          <button type="button" class="button" disabled={busy || readyCount === 0} onClick={onAll} data-testid="download-all">
-            <Icon name="download" />
-            {readyCount > 1 ? t('download.all', { count: readyCount }) : t('download.allOne')}
-          </button>
-        )}
+        <button type="button" class="button" disabled={busy || readyCount === 0} onClick={onAll} data-testid="download-all">
+          <Icon name="download" />
+          {overlay ? t('overlay.downloadZip') : readyCount > 1 ? t('download.all', { count: readyCount }) : t('download.allOne')}
+        </button>
       </div>
       {progress && (
         <div class="progress" role="status">
