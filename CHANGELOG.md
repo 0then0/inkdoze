@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-20
+
 ### Added
 
 - Batch export for CrossPoint 2.0.0 sleep overlays. The ZIP contains transparent PNGs in `.sleep-overlay/`, ready to extract to the SD card root. Each PNG uses the selected reader’s screen size and the image’s own framing settings.
@@ -45,7 +47,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
 
-[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/0then0/inkdoze/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/0then0/inkdoze/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/0then0/inkdoze/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/0then0/inkdoze/releases/tag/v0.1.0
