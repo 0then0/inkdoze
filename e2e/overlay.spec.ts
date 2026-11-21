@@ -1,6 +1,6 @@
 import { inflateSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
-import { addFiles, decodeInPage, downloadBytes, expectGray, makePng, readZip, waitReady, type Rgba } from './helpers.ts';
+import { addFiles, decodeInPage, downloadBytes, expectGray, makePng, readZip, waitPreview, waitReady, type Rgba } from './helpers.ts';
 
 type PreviewTestWindow = Window & { testPngs: Map<string, Blob> };
 
@@ -115,8 +115,10 @@ test('CrossPoint PNG keeps the placed alpha, matches the preview and restores st
   await waitReady(page, 1);
   await page.getByRole('radio', { name: 'Custom', exact: true }).last().check({ force: true });
   await page.getByTestId('custom-width').fill('200');
+  await page.getByTestId('custom-width').blur();
   await page.getByTestId('custom-height').fill('300');
-  await page.getByTestId('custom-height').press('Tab');
+  await page.getByTestId('custom-height').blur();
+  await waitPreview(page, '200 × 300');
   await page.getByRole('radio', { name: 'Fit', exact: true }).check({ force: true });
   await page.getByRole('button', { name: 'Black', exact: true }).click();
   await page.getByTestId('auto-tone').uncheck();
@@ -174,6 +176,7 @@ test('CrossPoint PNG keeps the placed alpha, matches the preview and restores st
 
   await mode.selectOption('standard');
   await expect(page.getByTestId('overlay-preview-page')).toHaveCount(0);
+  await waitPreview(page, '200 × 300');
   const ordinary = await downloadOne(page);
   expect(ordinary.name).toBe('alpha.png');
   const decoded = await decodeInPage(page, ordinary.bytes, 'image/png', [[10, 150], [160, 90], [160, 150], [160, 195]]);
