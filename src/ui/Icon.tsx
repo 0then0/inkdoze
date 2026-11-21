@@ -8,6 +8,7 @@ const PATHS = {
   download: 'M12 3v12m0 0l-5-5m5 5l5-5M4 19h16',
   left: 'M15 6l-6 6 6 6',
   right: 'M9 6l6 6-6 6',
+  down: 'M6 9l6 6 6-6',
   search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',
   check: 'M5 12l5 5 9-10',
   warn: 'M12 3l10 18H2L12 3zM12 10v5M12 18v.01',

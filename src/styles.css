@@ -164,10 +164,12 @@ select {
 
 /* ------------------------------------------------------------------ top bar */
 .topbar {
+  --topbar-gutter: 20px;
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 10px 20px;
+  padding: 10px var(--topbar-gutter);
   border-bottom: 1px solid var(--line);
   background: var(--panel);
 }
@@ -190,11 +192,52 @@ select {
   color: var(--muted);
 }
 
-.offline {
+.topbar-privacy {
   flex: 1;
   color: var(--muted);
   text-align: right;
   min-width: 0;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-inline-start: auto;
+}
+
+.offline-toggle {
+  min-block-size: 36px;
+  white-space: nowrap;
+  list-style: none;
+}
+
+.offline-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.offline-panel {
+  position: absolute;
+  z-index: 6;
+  inset-block-start: calc(100% + 4px);
+  inset-inline-end: var(--topbar-gutter);
+  inline-size: min(300px, calc(100% - 2 * var(--topbar-gutter)));
+  padding: 12px;
+  display: none;
+  justify-items: start;
+  gap: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.offline-control[open] .offline-panel {
+  display: grid;
+}
+
+.offline-panel .hint:empty {
+  position: absolute;
 }
 
 .lang select {
@@ -258,16 +301,14 @@ select {
 
 @media (max-width: 760px) {
   .topbar {
+    --topbar-gutter: 12px;
     flex-wrap: wrap;
-    padding: 10px 12px;
+    gap: 8px 12px;
   }
-  .offline {
+  .topbar-privacy {
     order: 3;
     flex-basis: 100%;
     text-align: left;
-  }
-  .lang {
-    margin-left: auto;
   }
   .layout {
     display: flex;

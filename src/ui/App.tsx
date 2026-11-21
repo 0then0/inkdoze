@@ -9,6 +9,7 @@ import { I18nContext, LOCALES, LOCALE_NAMES, createTranslator, matchLocale, type
 import { LIMITS } from '../io/limits.ts';
 import { overlayZipNames, sanitizeBaseName, stripExtension, uniqueNames } from '../io/names.ts';
 import { AbortedError, TaskQueue, isAbort } from '../io/queue.ts';
+import { isOfflinePage } from '../offline/client.ts';
 import { rotatedSize } from '../pipeline/geometry.ts';
 import { buildJob } from '../pipeline/job.ts';
 import { DEFAULT_ADJUST, type Adjustments, type NormRect, type RenderJob } from '../pipeline/types.ts';
@@ -19,6 +20,7 @@ import { DownloadPanel, type Progress } from './DownloadPanel.tsx';
 import { FilesPanel } from './FilesPanel.tsx';
 import { Logo } from './Icon.tsx';
 import { InstallGuide } from './InstallGuide.tsx';
+import { OfflineControl } from './OfflineControl.tsx';
 import { PreviewStage, type PreviewFrame, type StageFrame } from './PreviewStage.tsx';
 import { SettingsPanel } from './SettingsPanel.tsx';
 import { effectiveSettings, initialState, reducer, type AppState, type ImageItem } from './state.ts';
@@ -541,17 +543,20 @@ export function App() {
             <p class="tagline">{t('app.tagline')}</p>
           </div>
         </div>
-        <p class="offline small">{t('app.offline')}</p>
-        <label class="lang">
-          <span class="sr-only">{t('app.language')}</span>
-          <select value={locale} data-testid="locale" aria-label={t('app.language')} onChange={(e) => setLocale(e.currentTarget.value as Locale)}>
-            {LOCALES.map((l) => (
-              <option key={l} value={l} lang={l}>
-                {LOCALE_NAMES[l]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <p class="topbar-privacy small">{t('app.offline')}</p>
+        <div class="topbar-actions">
+          {isOfflinePage() && <OfflineControl />}
+          <label class="lang">
+            <span class="sr-only">{t('app.language')}</span>
+            <select value={locale} data-testid="locale" aria-label={t('app.language')} onChange={(e) => setLocale(e.currentTarget.value as Locale)}>
+              {LOCALES.map((l) => (
+                <option key={l} value={l} lang={l}>
+                  {LOCALE_NAMES[l]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </header>
 
       <main class="layout">

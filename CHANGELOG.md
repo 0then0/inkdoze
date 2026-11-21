@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- **Prepare for offline use** saves a complete build for reopening `/inkdoze/` after closing the tab, including the first HEIC import with the WASM fallback. Offline updates wait for tabs using the previous build to close. If an update fails, the previous build stays available.
+
 ## [0.4.0] - 2026-11-20
 
 ### Added

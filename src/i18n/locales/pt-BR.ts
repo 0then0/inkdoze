@@ -6,6 +6,17 @@ export const ptBR: Messages = {
   'app.language': 'Idioma',
   'app.skip': 'Ir para a prévia',
 
+  'offline.menu': 'Offline',
+  'offline.prepare': 'Preparar para usar sem internet',
+  'offline.update': 'Verificar atualizações para o modo offline',
+  'offline.preparing': 'Preparando os arquivos para uso offline…',
+  'offline.ready': 'Você já pode abrir o InkDoze sem internet.',
+  'offline.waiting': 'Atualização salva. Feche todas as abas do InkDoze e abra o InkDoze novamente.',
+  'offline.error': 'Não foi possível concluir a preparação. Confira a conexão e o espaço disponível no navegador.',
+  'offline.storage': 'O armazenamento do navegador está indisponível ou cheio. Permita que o site armazene dados ou libere espaço e tente novamente.',
+  'offline.unsupported': 'Este navegador ou tipo de conexão não permite preparar o modo offline.',
+  'offline.retry': 'Tentar novamente',
+
   'files.title': 'Imagens',
   'files.add': 'Adicionar imagens',
   'files.drop': 'Solte aqui arquivos PNG, JPEG, WebP ou HEIC',

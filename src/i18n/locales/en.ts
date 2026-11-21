@@ -10,6 +10,17 @@ export const en = {
   'app.language': 'Language',
   'app.skip': 'Skip to preview',
 
+  'offline.menu': 'Offline',
+  'offline.prepare': 'Prepare for offline use',
+  'offline.update': 'Check for offline updates',
+  'offline.preparing': 'Preparing files for offline use…',
+  'offline.ready': 'Ready to open offline.',
+  'offline.waiting': 'Update saved. Close all InkDoze tabs, then reopen InkDoze.',
+  'offline.error': 'Offline preparation failed. Check your connection and available browser storage.',
+  'offline.storage': 'Browser storage is unavailable or full. Allow site storage or free up space, then try again.',
+  'offline.unsupported': 'This browser or connection does not support offline setup.',
+  'offline.retry': 'Try again',
+
   'files.title': 'Images',
   'files.add': 'Add images',
   'files.drop': 'Drop PNG, JPEG, WebP or HEIC files here',

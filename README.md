@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/0then0/inkdoze" alt="License: Apache-2.0"></a>
 </p>
 
-InkDoze resizes, crops and tones images for the exact screen of your e-reader and tells you how (or whether) the device can use them as a sleep screen. Everything runs locally: after the page loads, no image, file name or metadata leaves your device, and the production build blocks network requests with a Content Security Policy.
+InkDoze resizes, crops and tones images for the exact screen of your e-reader and tells you how (or whether) the device can use them as a sleep screen. All image processing runs locally. The production page's Content Security Policy blocks connections from the page.
 
 **Open it in your browser:** <https://0then0.github.io/inkdoze/>
 
@@ -30,6 +30,17 @@ That is the whole workflow. **Automatic e-ink adjustment** is on by default: for
 For transparent overlays on CrossPoint 2.0.0, follow the [sleep overlay steps](#crosspoint-sleep-overlay).
 
 Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 px per side.
+
+## Open InkDoze offline
+
+1. While online, open `/inkdoze/`. Select **Offline** next to the language picker, then choose **Prepare for offline use**. This saves the app files, including the WebAssembly HEIC fallback.
+2. When **Ready to open offline** appears, you can close the tab and later open the same address without a connection in the same browser profile. You can import and export images in the new tab, including your first HEIC photo.
+
+Offline setup needs a secure context (HTTPS or localhost), Service Workers and space in the browser's site storage. Use **Try again** after a failed download or after freeing storage. Clearing site data or browser eviction of the cache means you need to prepare again while online. Photos, metadata and exports stay in the current tab's local processing session. You can use this workflow in a regular browser tab.
+
+Under **Offline**, select **Check for offline updates** to fetch a new build while online. A failed update leaves the most recent complete build available. When **Update saved** appears, close all InkDoze tabs, then reopen InkDoze to use the new build.
+
+Offline reopening and a first HEIC import were tested in Playwright Chromium and Firefox using the WASM fallback, and in Playwright WebKit on macOS using the native decoder. The two-build update and recovery test runs in Playwright Chromium. Offline reopening in Safari and on iPhone remains unverified.
 
 ## Features
 
@@ -108,7 +119,7 @@ Files are recognised by their content, not by name or MIME type, so photos with 
 
 - **Supported:** still HEIC images whose primary image is HEVC-coded, either as one image or as a grid of tiles. Rotation and mirroring stored in the container (`irot`, `imir`) are applied once; the EXIF orientation copy is not applied on top.
 - **Not supported:** image sequences (HEICS), AVIF, other codecs inside HEIF (JPEG, uncompressed), derived identity and overlay images. Only the primary image is used: depth maps, HDR gain maps, thumbnails and other auxiliary images are ignored. Each case is reported next to the file with its own message.
-- **Decoding path:** the worker first decodes a small built-in HEIC sample with `createImageBitmap` and checks its size and orientation. If that works, the browser decodes the photos; if the browser then rejects a particular photo, the WebAssembly decoder gets one try. Otherwise the photos go to the WebAssembly decoder: libheif 1.23 with libde265, from the [`libheif-js`](https://github.com/catdad-experiments/libheif-js) package. It runs in its own worker, one photo at a time, and is loaded from the app's own files the first time it is needed (about 2 MB, 0.7 MB compressed, with the WebAssembly binary embedded, so no other request is made). PNG, JPEG, WebP and natively decoded HEIC never load it. The decoder worker stops after a minute without work, or at once when the photo it is decoding is removed, which also returns its memory.
+- **Decoding path.** The worker tests a small built-in HEIC sample with `createImageBitmap` and checks its size and orientation. It uses the browser decoder if the test passes. When the test or a photo decode fails, the worker tries the WebAssembly fallback (libheif 1.23 with libde265). The fallback runs in its own worker, one photo at a time. During a regular online session, the browser requests it on first use (about 2 MB, or 0.7 MB compressed, including the embedded WASM binary). Offline preparation saves those files in advance. The decoder worker stops after a minute without work or when you remove the photo it is decoding, which also returns its memory. [libheif-js](https://github.com/catdad-experiments/libheif-js)
 - **Colour:** the WebAssembly path converts to RGB without applying the embedded ICC profile, so Display P3 photos look slightly less saturated than in the browser's own decoder. For grayscale e-ink output the difference is negligible.
 - **Output:** the HEIC file and its metadata (EXIF, XMP) are never copied into exported images.
 
@@ -138,6 +149,12 @@ Production build served locally at <http://localhost:4173/>:
 npm run build && npm run preview
 ```
 
+To try offline reopening with the same path as GitHub Pages, serve the production build at <http://127.0.0.1:4173/inkdoze/>:
+
+```bash
+npm run build && npm run preview -- --host 127.0.0.1 --base /inkdoze/
+```
+
 | Command                 | What it does                                     |
 | ----------------------- | ------------------------------------------------ |
 | `npm run catalog:check` | Validates the device catalog and install methods |
@@ -152,9 +169,11 @@ Install the Playwright browsers once with `npx playwright install chromium firef
 
 ## Hosting
 
-`npm run build` writes a static site to `dist/`. All paths are relative, so it works from a domain root or any sub-directory on any static host.
+`npm run build` writes a static site to `dist/`. The online app uses relative paths so it can be served from a domain root or a subdirectory. Offline setup registers `/inkdoze/sw.js` with scope `/inkdoze/`.
 
 The repository deploys itself to GitHub Pages with [`.github/workflows/pages.yml`](.github/workflows/pages.yml): after the CI workflow succeeds on `main`, the site is built and published to `https://<owner>.github.io/inkdoze/`. To enable it in a fork, open **Settings › Pages** and set **Source** to **GitHub Actions**; until then the workflow skips deployment with a notice. You can also run it manually from the **Actions** tab.
+
+Vite generates the precache list and SHA-256 digests from the production output, including both workers and the lazy HEIC decoder. The Service Worker prepares a new cache for each build and checks the responses before installation completes. The browser activates an update after the preceding worker has released its last client, so open tabs keep using their own build. On activation the worker claims the preparation tab and removes obsolete InkDoze caches. [Service Worker lifecycle](https://github.com/w3c/ServiceWorker/blob/main/explainer.md#updating-a-service-worker)
 
 ### Project layout
 
@@ -163,6 +182,7 @@ src/catalog/   devices, install methods, sources, validation
 src/pipeline/  geometry, tone and dithering, render job, canvas renderer
 src/formats/   BMP, PXC, ZIP and EPUB writers, format registry
 src/io/        header and HEIF container probing, limits, file names, task queue
+src/offline/   Service Worker and offline preparation
 src/worker/    render worker, HEIC decoding and its worker, client
 src/i18n/      translator and locale files
 src/ui/        Preact components
@@ -175,6 +195,8 @@ e2e/           Playwright tests
 Unit tests cover catalog validation (duplicates, incomplete records, wrong orientation, unknown methods or message keys), geometry (crop, rotation, placement, clipping), transparency, tone curves, palettes and dithering, BMP and PXC packing and row alignment checked against independent readers, ZIP structure against zlib's CRC-32, EPUB container layout, metadata and escaping, header probing, HEIF container parsing (HEIC versus AVIF and other ISO BMFF files, grids, damaged boxes), the task queue and locale completeness.
 
 Playwright runs against the production build served from `/inkdoze/`, as on GitHub Pages. It converts real files end to end, decodes the downloads with the browser's own decoders and checks sizes and control pixels, verifies ZIP contents, the Kindle cover EPUB (parsed with the browser's XML parser, cover identical to the image export, cancellation, errors and changes during export), per-file settings, error reporting, cancellation, offline use after load, HEIC import in Chromium, Firefox and WebKit (orientation in the list, preview and export, empty MIME type, mixed batches, damaged files, oversized grids, an unavailable decoder, removal during decoding, which files are loaded and when), and layout in all seven languages at desktop, tablet and phone widths.
+
+The offline tests close the preparation tab before taking the browser offline and checking the exported HEIC portrait in a fresh tab. They also cover retrying failed downloads, storage quota, cache eviction and recovery across two Vite builds on the same origin.
 
 ## Contributing
 

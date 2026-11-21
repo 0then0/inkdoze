@@ -45,7 +45,9 @@ async function layoutProblems(page: Page): Promise<string[]> {
       '.hint',
       '.steps li',
       '.limits li',
-      '.offline',
+      '.topbar-privacy',
+      '.offline-toggle',
+      '.offline-panel',
       '.tagline',
     ].join(',');
     for (const el of document.querySelectorAll<HTMLElement>(selectors)) {
@@ -82,6 +84,12 @@ for (const vp of VIEWPORTS) {
         // Empty state.
         expect(await layoutProblems(page), 'empty state').toEqual([]);
 
+        await page.locator('.offline-toggle').click();
+        await expect(page.locator('.offline-panel')).toBeVisible();
+        expect(await layoutProblems(page), 'offline menu').toEqual([]);
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.offline-panel')).toBeHidden();
+
         // With images, a device that has several install methods, and per-file scope.
         await addFiles(page, [
           { name: 'a-very-long-file-name-for-layout-testing.png', mimeType: 'image/png', buffer: quadrants() },
@@ -93,7 +101,7 @@ for (const vp of VIEWPORTS) {
         await page.locator('input[name="target"][value="custom"]').check({ force: true });
         await page.locator('input[name="levels"][value="4"]').check({ force: true });
         await page.locator('[data-device="kindle-paperwhite-6"]').click();
-        await page.locator('input[name="target"][value="device"]').check({ force: true });
+        await page.locator('input[name="target"][value="device"]').check();
         expect(await layoutProblems(page), 'working state').toEqual([]);
         await info.attach(`${locale}-${vp.name}.png`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
 

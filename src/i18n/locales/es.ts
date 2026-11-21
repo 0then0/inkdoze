@@ -6,6 +6,17 @@ export const es: Messages = {
   'app.language': 'Idioma',
   'app.skip': 'Ir a la vista previa',
 
+  'offline.menu': 'Sin conexión',
+  'offline.prepare': 'Preparar para usar sin conexión',
+  'offline.update': 'Buscar actualizaciones para el modo sin conexión',
+  'offline.preparing': 'Preparando archivos para usar sin conexión…',
+  'offline.ready': 'Ya puedes abrir InkDoze sin conexión.',
+  'offline.waiting': 'Actualización guardada. Cierra todas las pestañas de InkDoze y vuelve a abrirlo.',
+  'offline.error': 'No se pudo completar la preparación. Comprueba la conexión y el espacio disponible en el navegador.',
+  'offline.storage': 'El almacenamiento del navegador no está disponible o está lleno. Permite guardar datos del sitio o libera espacio e inténtalo de nuevo.',
+  'offline.unsupported': 'Este navegador o tipo de conexión no permite preparar el modo sin conexión.',
+  'offline.retry': 'Volver a intentar',
+
   'files.title': 'Imágenes',
   'files.add': 'Añadir imágenes',
   'files.drop': 'Suelta aquí archivos PNG, JPEG, WebP o HEIC',

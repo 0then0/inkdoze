@@ -6,6 +6,17 @@ export const ja: Messages = {
   'app.language': '言語',
   'app.skip': 'プレビューへ移動',
 
+  'offline.menu': 'オフライン',
+  'offline.prepare': 'オフラインで使えるようにする',
+  'offline.update': 'オフライン用の更新を確認',
+  'offline.preparing': 'オフラインで使うファイルを準備しています…',
+  'offline.ready': 'オフラインでも InkDoze を開けます。',
+  'offline.waiting': '更新を保存しました。InkDoze のタブをすべて閉じてから、もう一度開いてください。',
+  'offline.error': 'オフラインの準備に失敗しました。接続とブラウザーの空き容量を確認してください。',
+  'offline.storage': 'ブラウザーに保存できないか、空き容量が不足しています。サイトのデータ保存を許可するか、空き容量を確保してから再試行してください。',
+  'offline.unsupported': 'このブラウザーまたは接続環境では、オフライン利用を準備できません。',
+  'offline.retry': '再試行',
+
   'files.title': '画像',
   'files.add': '画像を追加',
   'files.drop': 'PNG・JPEG・WebP・HEIC ファイルをここにドロップ',

@@ -1,5 +1,9 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { defineConfig, type Plugin } from 'vite';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, transformWithOxc, type Plugin } from 'vite';
 
 // Production builds ship a strict Content-Security-Policy: the app may only load
 // its own static files, and connect-src 'none' blocks fetch/XHR/WebSocket so image
@@ -48,9 +52,34 @@ function licensesPlugin(): Plugin {
   };
 }
 
+function offlinePlugin(): Plugin {
+  const worker = fileURLToPath(new URL('src/offline/service-worker.ts', import.meta.url));
+  return {
+    name: 'inkdoze-offline',
+    apply: 'build',
+    buildStart() {
+      this.addWatchFile(worker);
+    },
+    async writeBundle({ dir }, bundle) {
+      if (!dir) this.error('InkDoze needs a build output directory.');
+      // The favicon is copied from public/. Read final bytes so hashes also include
+      // any source map comments added when Vite writes the JS files.
+      const files = ['favicon.svg', ...Object.keys(bundle).filter((name) => !name.endsWith('.map') && !name.startsWith('licenses/'))];
+      const precache = await Promise.all(files.sort().map(async (name) => {
+        const hash = createHash('sha256').update(await readFile(join(dir, name))).digest('base64');
+        return [name.split('/').map(encodeURIComponent).join('/'), `sha256-${hash}`];
+      }));
+      const { code } = await transformWithOxc(await readFile(worker, 'utf8'), worker, { target: 'es2022' });
+      const manifest = JSON.stringify(precache);
+      const version = createHash('sha256').update(manifest).update(code).digest('hex');
+      await writeFile(join(dir, 'sw.js'), `const buildId = "${version}";\nconst precache = ${manifest};\n${code}`);
+    },
+  };
+}
+
 export default defineConfig({
   base: './',
-  plugins: [cspPlugin(), licensesPlugin()],
+  plugins: [cspPlugin(), licensesPlugin(), offlinePlugin()],
   oxc: {
     jsx: { runtime: 'automatic', importSource: 'preact' },
   },

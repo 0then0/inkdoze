@@ -6,6 +6,17 @@ export const fr: Messages = {
   'app.language': 'Langue',
   'app.skip': 'Aller à l’aperçu',
 
+  'offline.menu': 'Hors ligne',
+  'offline.prepare': 'Préparer l’utilisation hors ligne',
+  'offline.update': 'Rechercher les mises à jour hors ligne',
+  'offline.preparing': 'Préparation des fichiers pour le mode hors ligne…',
+  'offline.ready': 'InkDoze peut maintenant s’ouvrir hors ligne.',
+  'offline.waiting': 'Mise à jour enregistrée. Fermez tous les onglets InkDoze, puis rouvrez InkDoze.',
+  'offline.error': 'La préparation a échoué. Vérifiez votre connexion et l’espace disponible dans le navigateur.',
+  'offline.storage': 'Le stockage du navigateur est indisponible ou plein. Autorisez le stockage du site ou libérez de l’espace, puis réessayez.',
+  'offline.unsupported': 'Ce navigateur ou ce type de connexion ne permet pas de préparer le mode hors ligne.',
+  'offline.retry': 'Réessayer',
+
   'files.title': 'Images',
   'files.add': 'Ajouter des images',
   'files.drop': 'Déposez ici des fichiers PNG, JPEG, WebP ou HEIC',

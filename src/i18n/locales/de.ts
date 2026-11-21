@@ -6,6 +6,17 @@ export const de: Messages = {
   'app.language': 'Sprache',
   'app.skip': 'Zur Vorschau springen',
 
+  'offline.menu': 'Offline',
+  'offline.prepare': 'Für die Offline-Nutzung vorbereiten',
+  'offline.update': 'Nach Offline-Updates suchen',
+  'offline.preparing': 'Dateien für die Offline-Nutzung werden vorbereitet …',
+  'offline.ready': 'InkDoze lässt sich jetzt offline öffnen.',
+  'offline.waiting': 'Update gespeichert. Schließe alle InkDoze-Tabs und öffne InkDoze erneut.',
+  'offline.error': 'Die Offline-Vorbereitung ist fehlgeschlagen. Prüfe die Verbindung und den freien Speicher im Browser.',
+  'offline.storage': 'Der Browserspeicher ist nicht verfügbar oder voll. Erlaube das Speichern von Websitedaten oder gib Speicherplatz frei und versuche es erneut.',
+  'offline.unsupported': 'Dieser Browser oder Verbindungstyp unterstützt die Offline-Vorbereitung nicht.',
+  'offline.retry': 'Erneut versuchen',
+
   'files.title': 'Bilder',
   'files.add': 'Bilder hinzufügen',
   'files.drop': 'PNG-, JPEG-, WebP- oder HEIC-Dateien hier ablegen',

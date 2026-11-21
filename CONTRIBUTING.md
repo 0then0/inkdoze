@@ -101,6 +101,6 @@ Translations should read like native UI text, not word-for-word English. Keep pr
 
 - TypeScript with `strict` settings, Preact for the UI, no runtime dependencies beyond Preact.
 - Type checking uses TypeScript 7 (the native compiler), installed as `@typescript/native`. `typescript` stays on 6.x only because typescript-eslint still needs the JavaScript compiler API, which TypeScript 7 does not ship. Run `npm run typecheck` rather than a bare `tsc`: both packages provide a `tsc` binary.
-- The app must work offline after load and must not make network requests. ESLint forbids `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` in app code.
+- The app must work offline after load. ESLint forbids `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` in page and image worker code. Offline preparation uses the scoped Service Worker to download the static files listed by the production build.
 - Binary formats need tests that read the output with an independent decoder.
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).

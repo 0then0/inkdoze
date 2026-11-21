@@ -18,9 +18,9 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /mobile\.spec\.ts/ },
-    // HEIC decoding and premultiplied alpha rendering differ by engine.
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: /(?:heic|overlay)\.spec\.ts/ },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /(?:heic|overlay)\.spec\.ts/ },
+    // HEIC decoding, premultiplied alpha and service workers differ by engine.
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] }, testMatch: /(?:heic|overlay|offline)\.spec\.ts/ },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] }, testMatch: /(?:heic|overlay|offline)\.spec\.ts/ },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /mobile\.spec\.ts/ },
   ],
   webServer: {
