@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-21
+
 ### Added
 
 - **Prepare for offline use** saves a complete build for reopening `/inkdoze/` after closing the tab, including the first HEIC import with the WASM fallback. Offline updates wait for tabs using the previous build to close. If an update fails, the previous build stays available.
@@ -51,7 +53,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
 
-[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/0then0/inkdoze/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/0then0/inkdoze/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/0then0/inkdoze/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/0then0/inkdoze/compare/v0.1.0...v0.2.0
