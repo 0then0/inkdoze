@@ -135,6 +135,19 @@ describe('batch versus per-file settings', () => {
     expect(s.images[1]!.adjust.rotation).toBe(0);
   });
 
+  it('applies an overlay profile only in its model and mode', () => {
+    const profile = {
+      id: 'overlay', name: 'Fit overlay', deviceId: 'xteink-x4', outputMode: 'crosspoint-overlay', settings: { fit: 'fit' },
+    } as const;
+    const apply = { type: 'applyProfile', profile } as const;
+    expect(reducer(initialState, apply)).toBe(initialState);
+
+    const overlay = reducer(initialState, { type: 'setOutputMode', mode: 'crosspoint-overlay' });
+    const x3 = reducer(overlay, { type: 'selectDevice', id: 'xteink-x3' });
+    expect(reducer(x3, apply)).toBe(x3);
+    expect(reducer(overlay, apply).batch).toEqual({ ...DEFAULT_SETTINGS, fit: 'fit' });
+  });
+
   it('switches to a custom target when no device is chosen', () => {
     const s = reducer(initialState, { type: 'selectDevice', id: null });
     expect(s.batch.target).toBe('custom');

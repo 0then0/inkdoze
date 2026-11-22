@@ -1,6 +1,6 @@
 import { inflateSync } from 'node:zlib';
 import { expect, test, type Page } from '@playwright/test';
-import { addFiles, decodeInPage, downloadBytes, expectGray, makePng, readZip, waitPreview, waitReady, type Rgba } from './helpers.ts';
+import { addFiles, decodeInPage, downloadBytes, expectGray, makePng, readZip, saveProfile, waitPreview, waitReady, type Rgba } from './helpers.ts';
 
 type PreviewTestWindow = Window & { testPngs: Map<string, Blob> };
 
@@ -194,6 +194,10 @@ test('overlay ZIP contains ready images with unique names and their individual f
   await expect(page.locator('.file-item[data-status="error"]')).toHaveCount(1);
   await page.getByTestId('output-mode').selectOption('crosspoint-overlay');
   await page.getByRole('radio', { name: 'Fit', exact: true }).check({ force: true });
+  await saveProfile(page, 'Fit overlay');
+  await page.getByRole('radio', { name: 'Stretch', exact: true }).check({ force: true });
+  await page.getByRole('button', { name: 'Apply profile', exact: true }).click();
+  await expect(page.getByRole('radio', { name: 'Fit', exact: true })).toBeChecked();
 
   await page.getByRole('button', { name: 'Select detail.png', exact: true }).click();
   await page.getByRole('button', { name: 'Crop', exact: true }).click();

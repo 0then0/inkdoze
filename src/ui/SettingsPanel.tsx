@@ -6,8 +6,9 @@ import type { TextKey } from '../i18n/keys.ts';
 import { LIMITS } from '../io/limits.ts';
 import { clampDimension } from '../pipeline/job.ts';
 import type { ColorChoice, ColorMode, Dither, FitMode, Levels, OutputSettings, TargetMode } from '../pipeline/types.ts';
-import { useEffect, useState } from 'preact/hooks';
+import { useLayoutEffect, useState } from 'preact/hooks';
 import { Icon } from './Icon.tsx';
+import { ProfilesPanel } from './ProfilesPanel.tsx';
 import type { Action, ImageItem, Scope } from './state.ts';
 
 const MANUAL_KEY = 'inkdoze.manualSettings';
@@ -34,7 +35,7 @@ function writeManualOpen(open: boolean): void {
  */
 function DimensionInput({ label, value, testId, onCommit }: { label: string; value: number; testId: string; onCommit: (v: number) => void }) {
   const [draft, setDraft] = useState(String(value));
-  useEffect(() => setDraft(String(value)), [value]);
+  useLayoutEffect(() => setDraft(String(value)), [value]);
   return (
     <label>
       <span>{label}</span>
@@ -58,6 +59,7 @@ function DimensionInput({ label, value, testId, onCommit }: { label: string; val
 
 interface Props {
   settings: OutputSettings;
+  batch: OutputSettings;
   scope: Scope;
   selected: ImageItem | undefined;
   device: Device | undefined;
@@ -96,7 +98,7 @@ function Radios<T extends string | number>(props: {
   );
 }
 
-export function SettingsPanel({ settings: s, scope, selected, device, method, overlayAvailable, overlay, dispatch }: Props) {
+export function SettingsPanel({ settings: s, batch, scope, selected, device, method, overlayAvailable, overlay, dispatch }: Props) {
   const { t } = useI18n();
   const set = (patch: Partial<OutputSettings>) => dispatch({ type: 'setSettings', patch });
   const format: OutputFormat = resolveFormat(s.format, method);
@@ -112,6 +114,7 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, ov
   const unconfirmed = method && method.formats.length > 0 && !method.formats.includes(format);
   const oneDisabled = !selected;
   const fitHelp: TextKey = overlay && s.fit !== 'stretch' ? `overlay.fitHelp.${s.fit}` : `settings.fitHelp.${s.fit}`;
+  const outputMode = overlay ? CROSSPOINT_OVERLAY_METHOD : 'standard';
 
   return (
     <section class="panel settings-panel" aria-labelledby="settings-title">
@@ -126,7 +129,7 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, ov
             id="output-mode"
             data-testid="output-mode"
             aria-describedby="output-mode-hint"
-            value={overlay ? CROSSPOINT_OVERLAY_METHOD : 'standard'}
+            value={outputMode}
             onChange={(e) => dispatch({ type: 'setOutputMode', mode: e.currentTarget.value === CROSSPOINT_OVERLAY_METHOD ? CROSSPOINT_OVERLAY_METHOD : 'standard' })}
           >
             <option value="standard">{t('overlay.standard')}</option>
@@ -135,6 +138,12 @@ export function SettingsPanel({ settings: s, scope, selected, device, method, ov
           <p id="output-mode-hint" class="hint">{t(overlay ? 'overlay.backgroundHint' : 'overlay.standardHint')}</p>
         </div>
       )}
+      <ProfilesPanel
+        deviceId={device?.id ?? null}
+        outputMode={outputMode}
+        batch={batch}
+        onApply={(profile) => dispatch({ type: 'applyProfile', profile })}
+      />
       {!overlay && (
         <label class="auto-card">
           <input type="checkbox" checked={s.autoTone} data-testid="auto-tone" onChange={(e) => set({ autoTone: e.currentTarget.checked })} />

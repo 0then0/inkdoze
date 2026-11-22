@@ -4,6 +4,7 @@ import { CROSSPOINT_OVERLAY_METHOD } from '../catalog/install.ts';
 import { DEFAULT_ADJUST, DEFAULT_SETTINGS, type Adjustments, type OutputSettings } from '../pipeline/types.ts';
 import type { TextKey } from '../i18n/keys.ts';
 import type { HeicDecoder } from '../worker/protocol.ts';
+import { sameProfileContext, type ProcessingProfile } from './profiles.ts';
 
 export type FileStatus = 'loading' | 'ready' | 'error';
 
@@ -65,6 +66,7 @@ export type Action =
   | { type: 'setOutputMode'; mode: OutputMode }
   | { type: 'setScope'; scope: Scope }
   | { type: 'setSettings'; patch: Partial<OutputSettings> }
+  | { type: 'applyProfile'; profile: ProcessingProfile }
   | { type: 'resetOverrides'; id: string }
   | { type: 'setAdjust'; id: string; patch: Partial<Adjustments> }
   | { type: 'resetAdjust'; id: string }
@@ -126,6 +128,9 @@ export function reducer(state: AppState, action: Action): AppState {
       }
       return { ...state, batch: { ...state.batch, ...action.patch } };
     }
+    case 'applyProfile':
+      if (!sameProfileContext(state, action.profile)) return state;
+      return { ...state, batch: { ...state.batch, ...action.profile.settings } };
     case 'resetOverrides':
       return patchImage(state, action.id, (i) => {
         if (state.outputMode !== CROSSPOINT_OVERLAY_METHOD) return { ...i, overrides: {} };

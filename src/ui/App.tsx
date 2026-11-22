@@ -108,7 +108,7 @@ export function App() {
   const method: InstallMethod | undefined = overlay ? overlayMethod : methods.find((m) => m.id === state.methodId) ?? methods[0];
   const selected = state.images.find((i) => i.id === state.selectedId);
   const selectedIndex = state.images.findIndex((i) => i.id === state.selectedId);
-  const settings = effectiveSettings(state, selected);
+  const settings = effectiveSettings(state, state.scope === 'one' ? selected : undefined);
   const readyCount = state.images.filter((i) => i.status === 'ready').length;
 
   useEffect(() => {
@@ -597,7 +597,7 @@ export function App() {
           />
         </div>
         <div class="col col-output">
-          <SettingsPanel settings={settings} scope={state.scope} selected={selected} device={device} method={method} overlayAvailable={!!overlayMethod} overlay={overlay} dispatch={dispatch} />
+          <SettingsPanel settings={settings} batch={state.batch} scope={state.scope} selected={selected} device={device} method={method} overlayAvailable={!!overlayMethod} overlay={overlay} dispatch={dispatch} />
           <DownloadPanel
             selected={selected}
             fileName={selected ? outputName(selected) : null}

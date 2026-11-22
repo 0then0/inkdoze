@@ -1503,3 +1503,28 @@ input[type='color'] {
   gap: 10px;
   margin-top: 8px;
 }
+
+.profiles {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.profiles select {
+  text-overflow: ellipsis;
+}
+
+.profiles .link-button {
+  justify-self: start;
+}
+
+.profiles .link-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}

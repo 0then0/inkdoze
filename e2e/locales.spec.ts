@@ -103,6 +103,16 @@ for (const vp of VIEWPORTS) {
         await page.locator('[data-device="kindle-paperwhite-6"]').click();
         await page.locator('input[name="target"][value="device"]').check();
         expect(await layoutProblems(page), 'working state').toEqual([]);
+
+        await page.locator('.profiles .link-button').click();
+        const name = page.locator('#profile-name');
+        await expect(name).toBeFocused();
+        const longName = 'Тёмные заставки для ночного чтения на электронной книге X4';
+        await name.fill(longName);
+        expect(await layoutProblems(page), 'profile editor').toEqual([]);
+        await name.press('Enter');
+        await expect(page.locator('.profiles option:checked')).toHaveText(longName);
+        expect(await layoutProblems(page), 'saved profile').toEqual([]);
         await info.attach(`${locale}-${vp.name}.png`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
 
         // Crop dialog.

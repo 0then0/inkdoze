@@ -191,6 +191,28 @@ export async function selectDevice(page: Page, query: string, id: string) {
   await page.locator(`[data-device="${id}"]`).click();
 }
 
+export async function setCustomSize(page: Page, width: number, height: number) {
+  await page.locator('input[name="target"][value="custom"]').check({ force: true });
+  await page.getByTestId('custom-width').fill(String(width));
+  await page.getByTestId('custom-width').blur();
+  await page.getByTestId('custom-height').fill(String(height));
+  await page.getByTestId('custom-height').blur();
+}
+
+export async function enterProfileName(page: Page, name: string) {
+  await page.getByRole('button', { name: 'Save batch settings as a profile', exact: true }).click();
+  const input = page.getByRole('textbox', { name: 'Profile name', exact: true });
+  await expect(input).toBeFocused();
+  await input.fill(name);
+  return input;
+}
+
+export async function saveProfile(page: Page, name: string) {
+  const input = await enterProfileName(page, name);
+  await input.press('Enter');
+  await expect(page.getByRole('region', { name: 'Processing profiles' }).getByRole('status')).toHaveText('Profile saved.');
+}
+
 /** Insert an APP1 segment of `size` bytes after SOI, like a large EXIF block. */
 export function withLargeExif(jpeg: Buffer, size = 70_000): Buffer {
   const segments: Buffer[] = [];

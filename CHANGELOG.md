@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Named processing profiles for each reader model and output mode. Save, apply, rename or delete batch settings with per-image overrides taking priority. Profiles are available after reopening the prepared app offline. Clearing site data deletes them.
+
 ## [0.5.0] - 2026-11-21
 
 ### Added

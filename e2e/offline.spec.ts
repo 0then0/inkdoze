@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test as base, type Page } from '@playwright/test';
 import { build } from 'vite';
-import { addFiles, decodeInPage, downloadBytes, expectColor, quadrants, waitPreview, waitReady } from './helpers.ts';
+import { addFiles, bmpPixel, decodeInPage, downloadBytes, enterProfileName, expectColor, makePng, parseBmp, quadrants, readZip, saveProfile, setCustomSize, waitPreview, waitReady } from './helpers.ts';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const PREFIX = '/inkdoze/';
@@ -179,6 +179,76 @@ test('exports online, then opens offline in a new tab and decodes the first HEIC
   }
 });
 
+test('applies a saved processing profile to a new batch after reopening offline', async ({ page, context }) => {
+  await open(page);
+  await setCustomSize(page, 96, 128);
+  await page.getByRole('radio', { name: 'Fit', exact: true }).check({ force: true });
+  await page.getByRole('button', { name: 'Black', exact: true }).click();
+  await page.getByTestId('auto-tone').uncheck();
+  await page.locator('#tone-contrast').fill('25');
+  await page.getByLabel('Invert', { exact: true }).check();
+  await page.getByTestId('format').selectOption('bmp2');
+  await page.locator('input[name="dither"][value="atkinson"]').check({ force: true });
+  const otherTab = await context.newPage();
+  await open(otherTab, page.url());
+  await Promise.all([enterProfileName(page, 'Offline four shades'), enterProfileName(otherTab, 'Other tab')]);
+  const submitAt = Date.now() + 200;
+  await Promise.all([page, otherTab].map((tab) => tab.evaluate(async (at) => {
+    await new Promise((resolve) => setTimeout(resolve, Math.max(0, at - Date.now())));
+    document.querySelector<HTMLInputElement>('#profile-name')!.form!.requestSubmit();
+  }, submitAt)));
+  for (const tab of [page, otherTab]) {
+    await expect(tab.getByRole('region', { name: 'Processing profiles' }).getByRole('status')).toHaveText('Profile saved.');
+    await expect(tab.getByRole('combobox', { name: 'Processing profiles' }).locator('option')).toHaveCount(3);
+  }
+  await otherTab.close();
+  await offlineToggle(page).click();
+  await prepare(page);
+
+  const url = page.url();
+  await page.close();
+  await context.setOffline(true);
+  const reopened = await context.newPage();
+  await open(reopened, url);
+  await expect(reopened.locator('.file-item')).toHaveCount(0);
+  const wide = makePng(96, 48, (x, y) => {
+    const gray = y >= 24 ? 128 : x < 48 ? 0 : 255;
+    return [gray, gray, gray, 255];
+  });
+  const tall = makePng(48, 96, (_x, y) => y < 48 ? [255, 255, 255, 255] : [0, 0, 0, 255]);
+  await addFiles(reopened, [
+    { name: 'wide.png', mimeType: 'image/png', buffer: wide },
+    { name: 'tall.png', mimeType: 'image/png', buffer: tall },
+  ]);
+  await waitReady(reopened, 2);
+  const profiles = reopened.getByRole('combobox', { name: 'Processing profiles' });
+  await expect(profiles.locator('option')).toHaveCount(3);
+  await expect(profiles.locator('option', { hasText: 'Other tab' })).toHaveCount(1);
+  await profiles.selectOption({ label: 'Offline four shades' });
+  await waitPreview(reopened, '480 × 800');
+  await expect(reopened.getByTestId('format')).toHaveValue('auto');
+  await reopened.getByRole('button', { name: 'Apply profile', exact: true }).click();
+  await waitPreview(reopened, '96 × 128');
+  await expect(reopened.getByTestId('format')).toHaveValue('bmp2');
+  await expect(reopened.locator('#tone-contrast')).toHaveValue('25');
+  await expect(reopened.locator('input[name="dither"][value="atkinson"]')).toBeChecked();
+
+  const [download] = await Promise.all([reopened.waitForEvent('download'), reopened.getByTestId('download-all').click()]);
+  expect(download.suggestedFilename()).toBe('inkdoze-xteink-x4.zip');
+  const files = readZip(await downloadBytes(download));
+  expect(files.map(({ name }) => name)).toEqual(['wide.bmp', 'tall.bmp']);
+  const [first, second] = files.map(({ data }) => {
+    const header = parseBmp(data);
+    expect([header.width, header.height, header.bpp, header.compression]).toEqual([96, 128, 2, 0]);
+    expect(header.palette).toEqual([0, 85, 170, 255]);
+    return (x: number, y: number) => bmpPixel(data, header, x, y);
+  });
+  expect([first!(10, 5), first!(10, 50), first!(85, 50)]).toEqual([255, 255, 0]);
+  const midtones = new Set(Array.from({ length: 32 }, (_, x) => first!(x + 10, 74)));
+  expect([...midtones].sort((a, b) => a - b)).toEqual([85, 170]);
+  expect([second!(4, 20), second!(48, 20), second!(48, 108)]).toEqual([255, 0, 255]);
+});
+
 test('preparing in one tab updates the offline status of an already open tab', async ({ page, context }) => {
   await open(page);
   await offlineToggle(page).click();
@@ -232,11 +302,13 @@ test('exhausted storage prevents readiness and an evicted build can be prepared 
   await expect(status(page)).toContainText('available browser storage');
   await session.send('Storage.overrideQuotaForOrigin', { origin });
   await prepare(page, RETRY);
+  await saveProfile(page, 'Stored outside the cache');
 
   const names = await page.evaluate(() => caches.keys());
   expect(names).toHaveLength(1);
   await page.evaluate((name) => caches.delete(name), names[0]!);
   await page.reload();
+  await expect(page.getByRole('combobox', { name: 'Processing profiles' }).locator('option')).toHaveText(['Choose a profile', 'Stored outside the cache']);
   await offlineToggle(page).click();
   await prepare(page);
   expect(await page.evaluate(() => caches.keys())).toEqual(names);

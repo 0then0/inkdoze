@@ -31,6 +31,14 @@ For transparent overlays on CrossPoint 2.0.0, follow the [sleep overlay steps](#
 
 Limits per batch: 40 files, 40 MB and 40 megapixels per file, output up to 8192 px per side.
 
+### Reuse batch settings
+
+In **Processing profiles**, choose **Save batch settings as a profile** and enter a name. The list shows profiles for the selected reader (or **Custom size**) and output mode. Choose a profile and select **Apply profile** to update the batch settings. You can also rename or delete the selected profile.
+
+Standard profiles save the output dimensions, fit, background, tone, colour, gray levels, dithering, format and JPEG quality settings for the batch. CrossPoint sleep overlay profiles save only the fit setting. The selected reader determines the overlay size and export uses transparent PNG. Individual images keep their framing, file names and overrides. Per-image settings take priority in both preview and export.
+
+You can save up to 40 profiles with names of up to 64 characters. The browser stores profiles in site data, separate from the offline app cache. Profiles are available when you reopen the prepared app offline in the same browser profile. Clearing site data deletes saved profiles.
+
 ## Open InkDoze offline
 
 1. While online, open `/inkdoze/`. Select **Offline** next to the language picker, then choose **Prepare for offline use**. This saves the app files, including the WebAssembly HEIC fallback.
@@ -129,6 +137,8 @@ Checked so far: Safari 27.2 on macOS 15.7 (by hand) and Playwright's WebKit buil
 
 InkDoze needs `OffscreenCanvas`, module Web Workers and `createImageBitmap`, which current versions of Chrome, Edge, Firefox and Safari provide. The automated tests run in Chromium (desktop and Android emulation); HEIC import is also tested in Firefox and WebKit.
 
+Processing profiles use IndexedDB. Saving the versioned record in a transaction keeps simultaneous edits in different tabs from overwriting one another.
+
 ## Run locally
 
 Requirements: Node.js 22.12 or newer (CI uses the version in [`.nvmrc`](.nvmrc)) and npm.
@@ -196,7 +206,7 @@ Unit tests cover catalog validation (duplicates, incomplete records, wrong orien
 
 Playwright runs against the production build served from `/inkdoze/`, as on GitHub Pages. It converts real files end to end, decodes the downloads with the browser's own decoders and checks sizes and control pixels, verifies ZIP contents, the Kindle cover EPUB (parsed with the browser's XML parser, cover identical to the image export, cancellation, errors and changes during export), per-file settings, error reporting, cancellation, offline use after load, HEIC import in Chromium, Firefox and WebKit (orientation in the list, preview and export, empty MIME type, mixed batches, damaged files, oversized grids, an unavailable decoder, removal during decoding, which files are loaded and when), and layout in all seven languages at desktop, tablet and phone widths.
 
-The offline tests close the preparation tab before taking the browser offline and checking the exported HEIC portrait in a fresh tab. They also cover retrying failed downloads, storage quota, cache eviction and recovery across two Vite builds on the same origin.
+The offline tests close the preparation tab before taking the browser offline and checking exports in a fresh tab. They cover first-time HEIC import, applying a saved profile to a new batch, retrying failed downloads, storage quota, cache eviction and recovery across two Vite builds on the same origin.
 
 ## Contributing
 
