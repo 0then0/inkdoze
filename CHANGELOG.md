@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-22
+
 ### Added
 
 - Named processing profiles for each reader model and output mode. Save, apply, rename or delete batch settings with per-image overrides taking priority. Profiles are available after reopening the prepared app offline. Clearing site data deletes them.
@@ -57,7 +59,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
 
-[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/0then0/inkdoze/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/0then0/inkdoze/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/0then0/inkdoze/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/0then0/inkdoze/compare/v0.2.0...v0.3.0
