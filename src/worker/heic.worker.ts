@@ -7,6 +7,7 @@
  * the device. One instance serves every request until the worker is terminated.
  */
 import { overInputLimits } from '../io/limits.ts';
+import { displayP3ToSrgb } from './display-p3.ts';
 import type { HeicRequest, HeicResponse, LoadError } from './protocol.ts';
 import type { LibHeif, LibHeifError } from 'libheif-js/libheif-wasm/libheif-bundle.mjs';
 
@@ -50,7 +51,7 @@ function failure(e: LibHeifError | null | undefined, what: string): DecodeFailur
 const isError = (v: unknown): v is LibHeifError => typeof v === 'object' && v !== null && 'code' in v && num(v.code) !== 0;
 
 /** Decode the primary image to 8-bit RGBA with `irot`/`imir`/`clap` applied, freeing every libheif object. */
-function decode(h: LibHeif, bytes: Uint8Array): { width: number; height: number; data: ArrayBuffer } {
+function decode(h: LibHeif, bytes: Uint8Array) {
   const ctx = h.heif_context_alloc();
   if (!ctx) throw new DecodeFailure('decode', 'no context');
   try {
@@ -73,7 +74,8 @@ function decode(h: LibHeif, bytes: Uint8Array): { width: number; height: number;
         const row = width * 4;
         if (plane.stride === row) out.set(plane.data.subarray(0, row * height));
         else for (let y = 0; y < height; y++) out.set(plane.data.subarray(y * plane.stride, y * plane.stride + row), y * row);
-        return { width, height, data: out.buffer };
+        const premultiplied = h.heif_image_handle_is_premultiplied_alpha(handle) !== 0;
+        return { width, height, pixels: out, premultiplied };
       } finally {
         h.heif_image_release(image.image);
       }
@@ -90,7 +92,7 @@ function post(msg: HeicResponse, transfer: Transferable[] = []) {
 }
 
 self.onmessage = async (event: MessageEvent<HeicRequest>) => {
-  const { id, file } = event.data;
+  const { id, file, displayP3 } = event.data;
   let h: LibHeif;
   try {
     h = await (library ??= loadLibrary());
@@ -100,8 +102,10 @@ self.onmessage = async (event: MessageEvent<HeicRequest>) => {
   }
   try {
     const bytes = new Uint8Array(await file.arrayBuffer());
-    const r = decode(h, bytes);
-    post({ id, ok: true, ...r }, [r.data]);
+    const { width, height, pixels, premultiplied } = decode(h, bytes);
+    // libheif reconstructs RGB using CICP and leaves the ICC transform to the caller.
+    if (displayP3) displayP3ToSrgb(pixels, premultiplied);
+    post({ id, ok: true, width, height, data: pixels.buffer }, [pixels.buffer]);
   } catch (e) {
     if (e instanceof DecodeFailure) return post({ id, ok: false, code: e.code, detail: e.detail });
     // A WebAssembly trap or out-of-memory abort leaves the instance unusable.

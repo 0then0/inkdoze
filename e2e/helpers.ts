@@ -186,6 +186,14 @@ export async function waitPreview(page: Page, size: string) {
   await expect(page.getByTestId('preview-size')).toHaveText(new RegExp(size.replace('×', '×')), { timeout: 20_000 });
 }
 
+/** Sample the preview canvas at positions relative to its size. */
+export async function previewAt(page: Page, points: Array<[number, number]>): Promise<Rgba[]> {
+  return page.getByTestId('preview-canvas').evaluate((c: HTMLCanvasElement, pts) => {
+    const ctx = c.getContext('2d', { willReadFrequently: true })!;
+    return pts.map(([u, v]) => [...ctx.getImageData(Math.floor(u * c.width), Math.floor(v * c.height), 1, 1).data]);
+  }, points) as Promise<Rgba[]>;
+}
+
 export async function selectDevice(page: Page, query: string, id: string) {
   await page.getByPlaceholder(/./).first().fill(query);
   await page.locator(`[data-device="${id}"]`).click();

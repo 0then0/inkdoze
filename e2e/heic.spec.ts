@@ -1,12 +1,36 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type BrowserContext, type Page, type TestInfo } from '@playwright/test';
-import { addFiles, decodeInPage, downloadBytes, encodeInPage, expectColor, makePng, quadrants, readZip, waitPreview, waitReady, type Rgba } from './helpers.ts';
+import { addFiles, decodeInPage, downloadBytes, encodeInPage, expectColor, makePng, previewAt, quadrants, readZip, waitPreview, waitReady, type Rgba } from './helpers.ts';
 
 // Fixtures written by scripts/make-heic-fixtures.swift with Apple's ImageIO. Display
 // layout: red, green / blue, yellow quadrants and a black "F" in the middle.
 const fixture = (name: string) => readFileSync(new URL(`../tests/fixtures/${name}`, import.meta.url));
 const IPHONE = fixture('portrait-iphone-layout.heic'); // 3024×4032 displayed, 48 tiles, irot + EXIF 6
 const SMALL = fixture('portrait-small.heic'); // 600×800 displayed, irot + EXIF 6
+const SRGB_SWATCHES = fixture('srgb-swatches.heic'); // sRGB source, unspecified CICP primaries and transfer
+
+const SOURCE_SWATCHES: Array<[number, number, number]> = [
+  [0, 0, 0], [12, 12, 12], [128, 128, 128], [255, 255, 255],
+  [188, 67, 72], [95, 173, 101], [79, 110, 198], [205, 141, 61],
+  [240, 50, 28], [36, 205, 46], [240, 21, 156], [58, 221, 231],
+];
+// Little CMS, the embedded Apple ICC → sRGB, relative colorimetric, applied to
+// the input swatches before HEVC encoding. Rows cover neutral, in- and out-of-gamut colours.
+const P3_REFERENCE: typeof SOURCE_SWATCHES = [
+  [0, 0, 0], [12, 12, 12], [128, 128, 128], [255, 255, 255],
+  [204, 54, 67], [61, 175, 92], [70, 111, 204], [216, 137, 37],
+  [255, 0, 0], [0, 209, 0], [255, 0, 159], [0, 225, 234],
+];
+// ImageIO alpha fixtures use four of the same colours at opacities 255, 128 and 64.
+// The associated fixture stores multiplied RGB and adds a `prem` reference to the
+// alpha item. Compare to the ICC reference composited over the app's white matte.
+const P3_ALPHA_REFERENCE = [255, 128, 64].flatMap((alpha) =>
+  [4, 5, 8, 9].map<[number, number, number]>((i) => {
+    const [r, g, b] = P3_REFERENCE[i]!;
+    const overWhite = (v: number) => Math.round(v * alpha / 255 + 255 - alpha);
+    return [overWhite(r), overWhite(g), overWhite(b)];
+  }),
+);
 
 const RED: Rgba = [230, 30, 30, 255];
 const GREEN: Rgba = [30, 200, 60, 255];
@@ -77,15 +101,50 @@ async function open(page: Page) {
   await expect(page.getByRole('heading', { name: 'InkDoze' })).toBeVisible();
 }
 
-/** Sample the preview canvas at positions relative to its size. */
-async function previewAt(page: Page, points: Array<[number, number]>): Promise<Rgba[]> {
-  return page.getByTestId('preview-canvas').evaluate((c: HTMLCanvasElement, pts) => {
-    const ctx = c.getContext('2d', { willReadFrequently: true })!;
-    return pts.map(([u, v]) => [...ctx.getImageData(Math.floor(u * c.width), Math.floor(v * c.height), 1, 1).data]);
-  }, points) as Promise<Rgba[]>;
-}
-
 test.beforeEach(async ({ page }) => open(page));
+
+const nclx = [...Buffer.from('nclx'), 0, 2, 0, 2, 0, 6, 0x80];
+const srgb = [...Buffer.from('nclx'), 0, 1, 0, 13, 0, 6, 0x80];
+const charts = [
+  { name: 'Display P3', buffer: fixture('display-p3-swatches.heic'), width: 128, height: 96, reference: P3_REFERENCE, tolerance: 6 },
+  { name: 'Display P3 grid with stored rotation', buffer: fixture('display-p3-grid.heic'), width: 1024, height: 768, reference: P3_REFERENCE, tolerance: 6 },
+  { name: 'Display P3 with straight alpha', buffer: fixture('display-p3-alpha.heic'), width: 128, height: 96, reference: P3_ALPHA_REFERENCE, tolerance: 6 },
+  { name: 'Display P3 with associated alpha', buffer: fixture('display-p3-associated-alpha.heic'), width: 128, height: 96, reference: P3_ALPHA_REFERENCE, tolerance: 6, allowsWasmFallback: true },
+  { name: 'sRGB control', buffer: replaceBytes(SRGB_SWATCHES, nclx, srgb), width: 128, height: 96, reference: SOURCE_SWATCHES, tolerance: 3 },
+  { name: 'unconfirmed colour space', buffer: SRGB_SWATCHES, width: 128, height: 96, reference: SOURCE_SWATCHES, tolerance: 3 },
+];
+
+for (const { name, buffer, width, height, reference, tolerance, allowsWasmFallback } of charts) {
+  test(`HEIC colour at original size: ${name}`, async ({ page }, info) => {
+    await addFiles(page, [heic('swatches.heic', buffer)]);
+    await waitReady(page, 1);
+    const item = page.locator('.file-item');
+    const decoder = expectedDecoder(info);
+    await expect(item).toHaveAttribute('data-decoder', allowsWasmFallback && decoder === 'native' ? /^(?:native|wasm)$/ : decoder);
+    await expect(item).toContainText(`${width} × ${height}`);
+
+    await page.locator('input[name="target"][value="original"]').check({ force: true });
+    await page.getByTestId('auto-tone').uncheck();
+    await page.getByRole('radio', { name: 'Colour', exact: true }).last().check({ force: true });
+    await page.getByTestId('format').selectOption('png');
+    await waitPreview(page, `${width} × ${height}`);
+
+    const points = reference.map<[number, number]>((_, i) => [
+      Math.floor(width * (i % 4 + 0.5) / 4), Math.floor(height * (Math.floor(i / 4) + 0.5) / 3),
+    ]);
+    const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('download-one').click()]);
+    const png = await decodeInPage(page, await downloadBytes(download), 'image/png', points);
+    expect([png.width, png.height]).toEqual([width, height]);
+    const samples = points.map(([x, y]) => png.at(x, y));
+    samples.forEach((sample, i) => {
+      expectColor(sample, reference[i]!, tolerance);
+      expect(sample[3]).toBe(255);
+    });
+    await expect(async () => {
+      expect(await previewAt(page, points.map(([x, y]) => [x / width, y / height]))).toEqual(samples);
+    }).toPass({ timeout: 20_000 });
+  });
+}
 
 test('iPhone-layout portrait HEIC: upright in the list, preview and sleep screen', async ({ page, context }, info) => {
   const t = track(page, context);

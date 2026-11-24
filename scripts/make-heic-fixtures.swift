@@ -14,6 +14,15 @@ let green: RGB = (30, 200, 60)
 let blue: RGB = (30, 60, 220)
 let yellow: RGB = (240, 220, 40)
 let black: RGB = (0, 0, 0)
+let swatches: [RGB] = [
+  black, (12, 12, 12), (128, 128, 128), (255, 255, 255),
+  (188, 67, 72), (95, 173, 101), (79, 110, 198), (205, 141, 61),
+  (240, 50, 28), (36, 205, 46), (240, 21, 156), (58, 221, 231),
+]
+
+func swatchPixel(_ x: Int, _ y: Int, _ w: Int, _ h: Int) -> RGB {
+  swatches[(y * 3 / h) * 4 + x * 4 / w]
+}
 
 /// Pixel colour in display orientation: four coloured quadrants and a black "F" in the
 /// middle. Any rotation or mirroring moves the quadrants or flips the glyph.
@@ -28,17 +37,18 @@ func portraitPixel(_ x: Int, _ y: Int, _ w: Int, _ h: Int) -> RGB {
   return u < 0.5 ? blue : yellow
 }
 
-/// Build the stored (sensor) image for EXIF orientation 6: the display image rotated
-/// 90° counter-clockwise, as a camera held upright writes it.
-func storedImage(displayWidth w: Int, displayHeight h: Int, pixel: (Int, Int, Int, Int) -> RGB) -> CGImage {
-  let sw = h, sh = w
+/// For EXIF orientation 6, store the display image rotated 90° counter-clockwise.
+func storedImage(displayWidth w: Int, displayHeight h: Int, space: CFString = CGColorSpace.sRGB,
+                 orientation: Int = 6, pixel: (Int, Int, Int, Int) -> RGB) -> CGImage {
+  let rotated = orientation == 6
+  let sw = rotated ? h : w, sh = rotated ? w : h
   var bytes = [UInt8](repeating: 255, count: sw * sh * 4)
   for dy in 0..<h {
     for dx in 0..<w {
       let (r, g, b) = pixel(dx, dy, w, h)
       // Orientation 6 displays the stored image rotated 90° clockwise, so display
       // (dx, dy) comes from stored (dy, w - 1 - dx).
-      let sx = dy, sy = w - 1 - dx
+      let sx = rotated ? dy : dx, sy = rotated ? w - 1 - dx : dy
       let o = (sy * sw + sx) * 4
       bytes[o] = r; bytes[o + 1] = g; bytes[o + 2] = b
     }
@@ -46,7 +56,7 @@ func storedImage(displayWidth w: Int, displayHeight h: Int, pixel: (Int, Int, In
   let provider = CGDataProvider(data: Data(bytes) as CFData)!
   return CGImage(
     width: sw, height: sh, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: sw * 4,
-    space: CGColorSpace(name: CGColorSpace.sRGB)!,
+    space: CGColorSpace(name: space)!,
     bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
     provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent)!
 }
@@ -76,3 +86,11 @@ writeHeic(storedImage(displayWidth: 600, displayHeight: 800, pixel: portraitPixe
 // Capability probe embedded in the worker: 16×32 displayed, top half red, bottom half blue.
 writeHeic(storedImage(displayWidth: 16, displayHeight: 32) { _, y, _, h in y < h / 2 ? red : blue },
           orientation: 6, quality: 0.9, to: out.appendingPathComponent("probe.heic"))
+
+// Matching patch values in two RGB spaces, plus a four-tile P3 grid with stored rotation.
+writeHeic(storedImage(displayWidth: 128, displayHeight: 96, space: CGColorSpace.displayP3, orientation: 1, pixel: swatchPixel),
+          orientation: 1, quality: 1, to: out.appendingPathComponent("display-p3-swatches.heic"))
+writeHeic(storedImage(displayWidth: 128, displayHeight: 96, orientation: 1, pixel: swatchPixel),
+          orientation: 1, quality: 1, to: out.appendingPathComponent("srgb-swatches.heic"))
+writeHeic(storedImage(displayWidth: 1024, displayHeight: 768, space: CGColorSpace.displayP3, pixel: swatchPixel),
+          orientation: 6, quality: 1, to: out.appendingPathComponent("display-p3-grid.heic"))

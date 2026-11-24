@@ -16,7 +16,7 @@ export interface Rendered {
 }
 
 function context(canvas: OffscreenCanvas): OffscreenCanvasRenderingContext2D {
-  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const ctx = canvas.getContext('2d', { colorSpace: 'srgb', willReadFrequently: true });
   if (!ctx) throw new Error('2D canvas is not available');
   return ctx;
 }

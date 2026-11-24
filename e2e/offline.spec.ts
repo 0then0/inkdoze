@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test as base, type Page } from '@playwright/test';
 import { build } from 'vite';
-import { addFiles, bmpPixel, decodeInPage, downloadBytes, enterProfileName, expectColor, makePng, parseBmp, quadrants, readZip, saveProfile, setCustomSize, waitPreview, waitReady } from './helpers.ts';
+import { addFiles, bmpPixel, decodeInPage, downloadBytes, enterProfileName, expectColor, makePng, parseBmp, previewAt, quadrants, readZip, saveProfile, setCustomSize, waitPreview, waitReady } from './helpers.ts';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const PREFIX = '/inkdoze/';
@@ -42,13 +42,13 @@ async function prepare(page: Page, label?: string) {
   await expect(status(page)).toBeVisible();
 }
 
-async function downloadPng(page: Page, points: Array<[number, number]>) {
+async function downloadPng(page: Page, points: Array<[number, number]>, width = 480, height = 800) {
   await page.getByTestId('format').selectOption('png');
-  await waitPreview(page, '480 × 800');
+  await waitPreview(page, `${width} × ${height}`);
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByTestId('download-one').click()]);
   expect(download.suggestedFilename()).toMatch(/\.png$/);
   const decoded = await decodeInPage(page, await downloadBytes(download), 'image/png', points);
-  expect([decoded.width, decoded.height]).toEqual([480, 800]);
+  expect([decoded.width, decoded.height]).toEqual([width, height]);
   return decoded;
 }
 
@@ -130,7 +130,7 @@ const test = base.extend<{ site: Site }>({
   },
 });
 
-test('exports online, then opens offline in a new tab and decodes the first HEIC', async ({ page, context, browserName }) => {
+test('exports online, then reopens offline and imports a Display P3 HEIC first', async ({ page, context, browserName }) => {
   const requested: string[] = [];
   context.on('request', (request) => requested.push(new URL(request.url()).pathname));
   await open(page);
@@ -172,7 +172,19 @@ test('exports online, then opens offline in a new tab and decodes the first HEIC
   await expect(status(reopened)).toHaveText(READY);
   await expect(reopened.locator('.file-item')).toHaveCount(0);
   const decoder = browserName === 'webkit' && process.platform === 'darwin' ? 'native' : 'wasm';
-  await exportPortrait(reopened, decoder);
+  const buffer = await readFile(new URL('../tests/fixtures/display-p3-swatches.heic', import.meta.url));
+  await addFiles(reopened, [{ name: 'swatches.heic', mimeType: 'image/heic', buffer }]);
+  await waitReady(reopened, 1);
+  await expect(reopened.locator('.file-item')).toHaveAttribute('data-decoder', decoder);
+  await reopened.locator('input[name="target"][value="original"]').check({ force: true });
+  await reopened.getByTestId('auto-tone').uncheck();
+  await reopened.getByRole('radio', { name: 'Colour', exact: true }).last().check({ force: true });
+  const png = await downloadPng(reopened, [[48, 48]], 128, 96);
+  const green = png.at(48, 48);
+  expectColor(green, [61, 175, 92], 6); // Little CMS reference for the in-gamut green swatch.
+  await expect(async () => {
+    expect(await previewAt(reopened, [[48 / 128, 48 / 96]])).toEqual([green]);
+  }).toPass({ timeout: 20_000 });
   if (browserName === 'chromium') {
     expect(cachedResponses).toContain(PREFIX);
     expect(cachedResponses.some((path) => /\/libheif-bundle-[\w-]+\.js$/.test(path))).toBe(true);

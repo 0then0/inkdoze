@@ -1,18 +1,16 @@
 /// <reference lib="webworker" />
 import { overInputLimits } from '../io/limits.ts';
-import { probeBlob } from '../io/probe.ts';
+import { probeBlob, type ProbeResult } from '../io/probe.ts';
 import { encodeRendered, renderPixels } from '../pipeline/render.ts';
 import { LoadFailure, cancelHeic, decodeHeic } from './heic.ts';
 import type { HeicDecoder, WorkerRequest, WorkerResponse } from './protocol.ts';
 
 declare const self: DedicatedWorkerGlobalScope;
 
-interface Loaded {
+interface Loaded extends Pick<ProbeResult, 'width' | 'height' | 'heic'> {
   bitmap: ImageBitmap;
   file: Blob;
   decoder?: HeicDecoder;
-  width: number;
-  height: number;
 }
 
 const images = new Map<string, Loaded>();
@@ -108,7 +106,7 @@ async function load(req: Extract<WorkerRequest, { type: 'load' }>) {
     const previous = images.get(req.imageId);
     if (activeOverlay?.image === previous) releaseOverlayBitmap();
     previous?.bitmap.close();
-    images.set(req.imageId, { bitmap, file: req.file, decoder, width: bitmap.width, height: bitmap.height });
+    images.set(req.imageId, { bitmap, file: req.file, decoder, width: bitmap.width, height: bitmap.height, heic: probe.heic });
     const thumb = await thumbnail(bitmap);
     post({ type: 'loaded', reqId: req.reqId, width: bitmap.width, height: bitmap.height, thumbnail: thumb, ...(decoder ? { decoder } : {}) });
   } finally {

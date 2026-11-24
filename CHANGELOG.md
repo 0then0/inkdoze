@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed
+
+- Convert SDR HEIC photos with the verified Apple Display P3 profile to sRGB in the WebAssembly decoder. Preview and export use the corrected colours for single-image and tiled photos, including during offline import.
+
 ## [0.6.0] - 2026-11-22
 
 ### Added

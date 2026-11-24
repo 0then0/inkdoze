@@ -23,6 +23,8 @@ export interface HeicInfo {
   mirror: boolean;
   /** Number of coded images: 1, or the tile count of a grid. */
   tiles: number;
+  /** An 8-bit primary image with the confirmed Display P3 ICC profile. */
+  displayP3?: true;
 }
 
 /**
@@ -39,6 +41,19 @@ const MAX_TOP_LEVEL_BOXES = 1024;
 /** iPhone photos have `meta` boxes of a few KiB; 48 MP grids stay well under 64 KiB. */
 const MAX_META_BYTES = 8 * 1024 * 1024;
 const MAX_ITEMS = 65_536;
+
+// The complete Apple Display P3.icc from https://registry.color.org/rgb-registry/displayp3.
+// Compare the payload, including the matrix and tone curves. The description alone is not an identifier.
+const DISPLAY_P3_ICC = atob(
+  'AAACGGFwcGwEAAAAbW50clJHQiBYWVogB+YAAQABAAAAAAAAYWNzcEFQUEwAAAAAQVBQTAAAAAAAAAAAAAAAAAAAAA' +
+  'AAAPbWAAEAAAAA0y1hcHBs7P2jjjiFR8NttL1PetoYLwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKZGVz' +
+  'YwAAAPwAAAAwY3BydAAAASwAAABQd3RwdAAAAXwAAAAUclhZWgAAAZAAAAAUZ1hZWgAAAaQAAAAUYlhZWgAAAbgAAA' +
+  'AUclRSQwAAAcwAAAAgY2hhZAAAAewAAAAsYlRSQwAAAcwAAAAgZ1RSQwAAAcwAAAAgbWx1YwAAAAAAAAABAAAADGVu' +
+  'VVMAAAAUAAAAHABEAGkAcwBwAGwAYQB5ACAAUAAzbWx1YwAAAAAAAAABAAAADGVuVVMAAAA0AAAAHABDAG8AcAB5AH' +
+  'IAaQBnAGgAdAAgAEEAcABwAGwAZQAgAEkAbgBjAC4ALAAgADIAMAAyADJYWVogAAAAAAAA9tUAAQAAAADTLFhZWiAA' +
+  'AAAAAACD3wAAPb////+7WFlaIAAAAAAAAEq/AACxNwAACrlYWVogAAAAAAAAKDgAABELAADIuXBhcmEAAAAAAAMAAA' +
+  'ACZmYAAPKnAAANWQAAE9AAAApbc2YzMgAAAAAAAQxCAAAF3v//8yYAAAeTAAD9kP//+6L///2jAAAD3AAAwG4=',
+);
 
 const AVIF_BRANDS = new Set(['avif', 'avis', 'avio']);
 const HEIC_BRANDS = new Set(['heic', 'heix', 'heim', 'heis', 'hevc', 'hevx', 'hevm', 'hevs', 'MiHE', 'MiHB']);
@@ -303,6 +318,40 @@ function propertiesOf(meta: Meta, id: number): Property[] {
   return out;
 }
 
+/** A grid must identify its own RGB space. Its tiles may omit ICC or carry the same profile. */
+function hasCompatibleColor(meta: Meta, props: Property[], requireIcc: boolean): boolean {
+  let icc = false;
+  let nclx = false;
+  for (const { type, box: { start, end } } of props) {
+    if (type !== 'colr') continue;
+    if (end - start < 4) return false;
+    const colourType = fourcc(meta.bytes, start);
+    const data = start + 4;
+    if (colourType === 'nclx') {
+      // libheif uses CICP for YCbCr matrix and range. ICC still describes the
+      // resulting RGB. Allow SDR or unspecified transfer signalling alongside it.
+      if (nclx || end - data !== 7 || (meta.bytes[data + 6]! & 0x7f) !== 0) return false;
+      const transfer = (meta.bytes[data + 2]! << 8) | meta.bytes[data + 3]!;
+      if (transfer !== 1 && transfer !== 2 && transfer !== 6 && transfer !== 13) return false;
+      nclx = true;
+    } else {
+      if (icc || (colourType !== 'prof' && colourType !== 'rICC') || end - data !== DISPLAY_P3_ICC.length) return false;
+      for (let i = 0; i < DISPLAY_P3_ICC.length; i++) {
+        if (meta.bytes[data + i] !== DISPLAY_P3_ICC.charCodeAt(i)) return false;
+      }
+      icc = true;
+    }
+  }
+  return icc || !requireIcc;
+}
+
+function has8BitHevc(meta: Meta, props: Property[]): boolean {
+  const box = props.find((p) => p.type === 'hvcC')?.box;
+  if (!box || box.end - box.start < 23 || meta.bytes[box.start] !== 1) return false;
+  // HEVCDecoderConfigurationRecord bitDepthLumaMinus8 and bitDepthChromaMinus8.
+  return ((meta.bytes[box.start + 17]! | meta.bytes[box.start + 18]!) & 7) === 0;
+}
+
 function ispe(meta: Meta, id: number): { width: number; height: number } {
   const p = propertiesOf(meta, id).find((x) => x.type === 'ispe');
   if (!p) throw new Corrupt(`no size for item ${id}`);
@@ -356,7 +405,9 @@ function checkCodedItem(meta: Meta, id: number, fileSize: number) {
     if (end < 0) throw new Variant(`construction method ${loc.method}`);
     if (e.offset + e.length > end) throw new Corrupt(`item ${id} data past the end`);
   }
-  if (!propertiesOf(meta, id).some((p) => p.type === 'hvcC')) throw new Corrupt(`no decoder configuration for item ${id}`);
+  const props = propertiesOf(meta, id);
+  if (!props.some((p) => p.type === 'hvcC')) throw new Corrupt(`no decoder configuration for item ${id}`);
+  return props;
 }
 
 /** Apply `clap`, `irot` and `imir` in their association order to the coded size. */
@@ -446,18 +497,21 @@ export async function probeHeif(read: ByteReader, size: number): Promise<HeicInf
     let decodePixels: number;
     let coded: { width: number; height: number };
     let tiles = 1;
+    let displayP3 = hasCompatibleColor(meta, propertiesOf(meta, meta.primary), true);
     if (type === 'hvc1') {
-      checkCodedItem(meta, meta.primary, size);
+      const props = checkCodedItem(meta, meta.primary, size);
+      displayP3 &&= has8BitHevc(meta, props);
       coded = ispe(meta, meta.primary);
       decodePixels = coded.width * coded.height;
     } else {
-      const grid = await gridLayout(meta, read, size);
+      const grid = await gridLayout(meta, read, size, displayP3);
       coded = { width: grid.width, height: grid.height };
       decodePixels = grid.decodePixels;
       tiles = grid.tiles;
+      displayP3 = grid.displayP3;
     }
     const t = transform(meta, meta.primary, coded);
-    return { kind: 'heic', width: t.width, height: t.height, decodePixels, rotation: t.rotation, mirror: t.mirror, tiles };
+    return { kind: 'heic', ...t, decodePixels, tiles, ...(displayP3 ? { displayP3: true } : {}) };
   } catch (e) {
     if (e instanceof Corrupt) return 'corrupt';
     if (e instanceof Variant) return 'variant';
@@ -479,7 +533,7 @@ function itemFamily(meta: Meta, id: number, type: string): HeifFamily {
   return 'heif';
 }
 
-async function gridLayout(meta: Meta, read: ByteReader, size: number) {
+async function gridLayout(meta: Meta, read: ByteReader, size: number, displayP3: boolean) {
   const id = meta.primary;
   const d = new Cursor(await itemData(meta, id, read, size, 12));
   const version = d.u8();
@@ -495,7 +549,8 @@ async function gridLayout(meta: Meta, read: ByteReader, size: number) {
   let tile: { width: number; height: number } | null = null;
   for (const t of tiles) {
     if (meta.types.get(t) !== 'hvc1') throw new Corrupt(`grid tile ${t} is not HEVC`);
-    checkCodedItem(meta, t, size);
+    const props = checkCodedItem(meta, t, size);
+    displayP3 &&= has8BitHevc(meta, props) && hasCompatibleColor(meta, props, false);
     const s = ispe(meta, t);
     if (tile && (s.width !== tile.width || s.height !== tile.height)) throw new Corrupt('grid tiles differ in size');
     tile = s;
@@ -507,7 +562,7 @@ async function gridLayout(meta: Meta, read: ByteReader, size: number) {
     const s = ispe(meta, id);
     if (s.width !== width || s.height !== height) throw new Corrupt('grid size disagrees with ispe');
   }
-  return { width, height, tiles: tiles.length, decodePixels: tile.width * tile.height * tiles.length };
+  return { width, height, tiles: tiles.length, decodePixels: tile.width * tile.height * tiles.length, displayP3 };
 }
 
 /** True for files that start with an ISO BMFF `ftyp` box. */

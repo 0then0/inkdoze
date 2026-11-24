@@ -33,6 +33,7 @@ declare module 'libheif-js/libheif-wasm/libheif-bundle.mjs' {
     heif_js_context_get_primary_image_handle(ctx: Context): Handle | LibHeifError | null;
     heif_image_handle_get_width(handle: Handle): number;
     heif_image_handle_get_height(handle: Handle): number;
+    heif_image_handle_is_premultiplied_alpha(handle: Handle): number;
     heif_image_handle_release(handle: Handle): void;
     heif_js_decode_image2(handle: Handle, colorspace: Enum, chroma: Enum): LibHeifDecoded | LibHeifError | null;
     heif_image_release(image: unknown): void;

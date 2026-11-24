@@ -7,6 +7,7 @@
  * loaded on first use only, and shut down when idle or when its photo is removed.
  */
 import { LIMITS } from '../io/limits.ts';
+import type { ProbeResult } from '../io/probe.ts';
 import type { HeicDecoder, HeicRequest, HeicResponse, LoadError } from './protocol.ts';
 import { HEIC_SAMPLE_BASE64, HEIC_SAMPLE_SIZE } from './heic-sample.ts';
 
@@ -63,7 +64,7 @@ export function nativeHeicWorks(): Promise<boolean> {
 async function decodeNative(file: Blob, expected: { width: number; height: number }, premultiplyAlpha: 'none' | 'premultiply'): Promise<ImageBitmap | null> {
   let bitmap: ImageBitmap;
   try {
-    // Give the decoder the type the sample was tested with; user files often have none.
+    // Keep the browser's default colour management. The bitmap is drawn into an sRGB canvas.
     bitmap = await createImageBitmap(new Blob([file], { type: 'image/heic' }), { ...BITMAP_OPTIONS, premultiplyAlpha });
   } catch {
     return null;
@@ -76,10 +77,8 @@ async function decodeNative(file: Blob, expected: { width: number; height: numbe
   return bitmap;
 }
 
-interface Job {
-  id: number;
+interface Job extends HeicRequest {
   imageId: string;
-  file: Blob;
   resolve: (r: Extract<HeicResponse, { ok: true }>) => void;
   reject: (e: LoadFailure) => void;
 }
@@ -92,9 +91,9 @@ class WasmHeic {
   private nextId = 1;
   private idleTimer: ReturnType<typeof setTimeout> | undefined;
 
-  decode(imageId: string, file: Blob): Promise<Extract<HeicResponse, { ok: true }>> {
+  decode(imageId: string, file: Blob, displayP3: boolean): Promise<Extract<HeicResponse, { ok: true }>> {
     return new Promise((resolve, reject) => {
-      this.queue.push({ id: this.nextId++, imageId, file, resolve, reject });
+      this.queue.push({ id: this.nextId++, imageId, file, displayP3, resolve, reject });
       this.pump();
     });
   }
@@ -129,7 +128,7 @@ class WasmHeic {
       return;
     }
     this.current = job;
-    worker.postMessage({ id: job.id, file: job.file } satisfies HeicRequest);
+    worker.postMessage({ id: job.id, file: job.file, displayP3: job.displayP3 } satisfies HeicRequest);
   }
 
   private start(): Worker {
@@ -183,17 +182,21 @@ export function cancelHeic(imageId: string) {
 export async function decodeHeic(
   imageId: string,
   file: Blob,
-  expected: { width: number; height: number },
+  expected: Pick<ProbeResult, 'width' | 'height' | 'heic'>,
   isReleased: () => boolean,
   premultiplyAlpha: 'none' | 'premultiply' = 'none',
 ): Promise<{ bitmap: ImageBitmap; decoder: HeicDecoder }> {
+  const displayP3 = expected.heic?.displayP3 === true;
+  // WebKit can draw a straight-alpha ImageBitmap as premultiplied. Request the
+  // premultiplied form for the colour-managed raster regardless of its decoder.
+  const bitmapAlpha = displayP3 ? 'premultiply' : premultiplyAlpha;
   if (await nativeHeicWorks()) {
-    const bitmap = await decodeNative(file, expected, premultiplyAlpha);
+    const bitmap = await decodeNative(file, expected, bitmapAlpha);
     if (bitmap) return { bitmap, decoder: 'native' };
   }
   if (isReleased()) throw new LoadFailure('missing');
-  const r = await wasm.decode(imageId, file);
-  const pixels = new ImageData(new Uint8ClampedArray(r.data), r.width, r.height);
-  const bitmap = await createImageBitmap(pixels, { premultiplyAlpha });
+  const r = await wasm.decode(imageId, file, displayP3);
+  const pixels = new ImageData(new Uint8ClampedArray(r.data), r.width, r.height, { colorSpace: 'srgb' });
+  const bitmap = await createImageBitmap(pixels, { premultiplyAlpha: bitmapAlpha });
   return { bitmap, decoder: 'wasm' };
 }

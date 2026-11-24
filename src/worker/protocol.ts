@@ -27,9 +27,10 @@ export type WorkerResponse =
 export interface HeicRequest {
   id: number;
   file: Blob;
+  displayP3: boolean;
 }
 
-/** HEIC decoder worker → render worker. `data` is transferred RGBA, row by row without padding. */
+/** HEIC decoder worker → render worker. `data` is RGBA for the sRGB canvas, without row padding. */
 export type HeicResponse =
   | { id: number; ok: true; width: number; height: number; data: ArrayBuffer }
   | { id: number; ok: false; code: LoadError; detail?: string; fatal?: boolean };
