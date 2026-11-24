@@ -4,6 +4,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-11-24
+
 ### Fixed
 
 - Convert SDR HEIC photos with the verified Apple Display P3 profile to sRGB in the WebAssembly decoder. Preview and export use the corrected colours for single-image and tiled photos, including during offline import.
@@ -63,7 +65,8 @@ All notable changes to this project are documented here. The format follows [Kee
 - CI with catalog validation, type checks, lint, unit tests, production build and Playwright tests.
 - GitHub Pages deployment after CI passes on `main`.
 
-[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/0then0/inkdoze/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/0then0/inkdoze/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/0then0/inkdoze/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/0then0/inkdoze/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/0then0/inkdoze/compare/v0.3.0...v0.4.0
