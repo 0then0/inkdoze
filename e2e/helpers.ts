@@ -221,6 +221,29 @@ export async function saveProfile(page: Page, name: string) {
   await expect(page.getByRole('region', { name: 'Processing profiles' }).getByRole('status')).toHaveText('Profile saved.');
 }
 
+export async function exportProfileFile(page: Page) {
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Export profile', exact: true }).click(),
+  ]);
+  return download;
+}
+
+export async function chooseProfileFile(page: Page, file: { name: string; mimeType: string; buffer: Buffer } | string, button = 'Choose JSON file') {
+  const dialog = page.getByRole('dialog', { name: 'Import profile' });
+  const [chooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    dialog.getByRole('button', { name: button, exact: true }).click(),
+  ]);
+  await chooser.setFiles(file);
+  return dialog;
+}
+
+export async function openProfileFile(page: Page, file: Parameters<typeof chooseProfileFile>[1]) {
+  await page.getByRole('button', { name: 'Import profile', exact: true }).click();
+  return chooseProfileFile(page, file);
+}
+
 /** Insert an APP1 segment of `size` bytes after SOI, like a large EXIF block. */
 export function withLargeExif(jpeg: Buffer, size = 70_000): Buffer {
   const segments: Buffer[] = [];

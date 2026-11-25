@@ -32,7 +32,7 @@ npx playwright install chromium firefox webkit
 npm run test:e2e
 ```
 
-Playwright serves the production build under `/inkdoze/`. It checks real image downloads and control pixels, installation-dependent output, offline reopening, processing profiles and layouts in all seven languages. The HEIC, CrossPoint overlay and offline suites also run in Firefox and WebKit. [Browser projects](../playwright.config.ts) · [Browser tests](../e2e)
+Playwright serves the production build under `/inkdoze/`. It checks real image downloads and control pixels, installation-dependent output, offline reopening, processing profile transfer and layouts in all seven languages. The HEIC, CrossPoint overlay and offline suites also run in Firefox and WebKit. [Browser projects](../playwright.config.ts) · [Browser tests](../e2e)
 
 Run a single spec by passing its path, for example `npm run test:e2e -- e2e/locales.spec.ts`. The default preview and test server use port `4173`.
 
@@ -53,7 +53,7 @@ The GitHub Pages workflow publishes `dist/` after successful CI for a push to `m
 
 The production page uses `connect-src 'none'` to block connections from page scripts through APIs such as Fetch and WebSocket. Offline preparation runs in a scoped service worker. It downloads the static build files, checks their digests and media types, and saves a separate cache for each complete build. An update activates after the previous build's tabs close. [Build configuration](../vite.config.ts) · [Service worker](../src/offline/service-worker.ts)
 
-Processing profiles use IndexedDB. Saving checks the collection limit and name in the transaction that writes the record. Edits from separate tabs use the latest stored collection. [Profile storage](../src/ui/profiles.ts) · [User guide for profiles](user-guide.md#reuse-batch-settings)
+Processing profiles use IndexedDB. Save and import check the collection limit and name within the transaction that writes the record. The portable JSON identifier is `inkdoze.processing-profile`, with format version `1`. Its version is independent of the IndexedDB record. [Profile storage and file validation](../src/ui/profiles.ts) · [User guide for profiles](user-guide.md#reuse-batch-settings)
 
 ## Project layout
 

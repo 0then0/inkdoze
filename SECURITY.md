@@ -12,11 +12,11 @@ You can expect an acknowledgement within a week. Once a fix is ready we will pub
 
 ## Scope
 
-InkDoze processes untrusted image files in the browser. Reports may cover issues such as the following.
+InkDoze processes untrusted images and profile files in the browser. Reports may cover issues such as the following.
 
-- Exposure of image data, file names or metadata.
+- Exposure of image data, file names, metadata or profile contents.
 - Crafted files that bypass the size and pixel limits or exhaust memory before the limits apply.
 - Malformed output (BMP, ZIP) that could harm the software reading it on an e-reader.
-- Script injection through file names, catalog data or translations.
+- Script injection through file names, profile data, catalog data or translations.
 
 Bugs in browsers' own image decoders should be reported to the browser vendor.

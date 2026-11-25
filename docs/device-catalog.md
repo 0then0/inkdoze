@@ -36,7 +36,7 @@ Use these source categories in the catalog:
 
 ### Add the record
 
-Model records live in `devices.ts`, with separate files for the Russian-market ONYX BOOX catalog and for brands with smaller catalogs. Reusable links are in `sources.ts`. Follow the existing `brand()` records and use a unique lowercase ID in kebab case. Keep published IDs stable because saved selections and processing profiles refer to them. Use `ordinal` for numbered generations so the interface can translate them. [Catalog files](../src/catalog)
+Model records live in `devices.ts`, with separate files for the Russian-market ONYX BOOX catalog and for brands with smaller catalogs. Reusable links are in `sources.ts`. Follow the existing `brand()` records and use a unique lowercase ID in kebab case. Keep published IDs stable because saved selections and portable profiles refer to them. Use `ordinal` for numbered generations so the interface can translate them. [Catalog files](../src/catalog)
 
 For example, the Kobo Libra Colour record includes this data:
 

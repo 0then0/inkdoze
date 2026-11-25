@@ -19,14 +19,22 @@ In **Processing profiles**, select **Save batch settings as a profile** and ente
 
 Standard profiles store output size, framing, background, colour, tone, gray levels, dithering, format and JPEG quality. CrossPoint sleep overlay profiles store the framing choice. Individual image settings take priority when rendering previews and downloads.
 
-The browser stores up to 40 profiles, with names of up to 64 characters. Profiles are kept in site data independently of the offline app cache. Clearing site data deletes saved profiles.
+### Transfer a profile
+
+1. Select a saved profile and choose **Export profile**. The downloaded JSON holds the saved settings, name, reader or **Custom size**, and output mode.
+2. In another browser, select **Import profile**, choose the JSON file and review its settings. If the name is already in use for that reader and mode, confirm the suggested name or enter a different one.
+3. Save the profile. To use it, select it under its model and output mode, then choose **Apply profile**.
+
+Each file holds one profile. Image files, image names, per-image settings and local profile IDs are outside the profile file format. Imports accept JSON files up to 16 KiB. The collection holds up to 40 profiles, with names of up to 64 characters.
+
+The browser stores profiles in site data independently of the offline app cache. Keep exported JSON files separately. If you clear site data, you can restore the profiles from those files as long as your InkDoze build supports their format version.
 
 ## Open InkDoze offline
 
 1. While online, open InkDoze at `/inkdoze/`. Select **Offline** next to the language picker, then **Prepare for offline use**.
 2. Wait for **Ready to open offline**. You can close the tab and reopen the same address without a connection, using the same browser profile.
 
-The prepared app can add and export images, including the first HEIC photo. Add your image files again after reopening. The offline cache holds the app files, while saved profiles and preferences use browser site storage.
+The prepared app can add and export images, including the first HEIC photo, and can import or export processing profiles. Add your image files again after reopening. The offline cache holds the app files, while saved profiles and preferences use browser site storage.
 
 Offline preparation requires Service Workers, Cache Storage, WebAssembly and space in site storage. If preparation fails, check storage and the connection, then select **Try again**. If the browser removes the cache or you clear site data, prepare again while online. [Browser requirements](#browser-support-and-privacy)
 
@@ -54,4 +62,4 @@ For a full-screen custom image, use standard output and follow the CrossPoint in
 
 Open InkDoze from a secure origin such as HTTPS or localhost. The browser needs `OffscreenCanvas`, module Web Workers and `createImageBitmap`. Profile storage also needs IndexedDB. The automated browser tests cover Chromium, Firefox and WebKit, with a phone viewport and touch emulation in Chromium.
 
-InkDoze processes images locally. The site serves the app and its decoder. Preparing for offline use copies those static files into the browser cache. The production page blocks network connections from application scripts. [Browser tests and build details](development.md)
+InkDoze processes images and profile files locally. The site serves the app and its decoder. Preparing for offline use copies those static files into the browser cache. The production page blocks network connections from application scripts. [Browser tests and build details](development.md)

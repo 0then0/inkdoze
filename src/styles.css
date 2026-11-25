@@ -1362,9 +1362,9 @@ input[type='color'] {
   }
 }
 
-/* ------------------------------------------------------------------ crop dialog */
-.crop-dialog {
-  width: min(920px, calc(100vw - 24px));
+/* ------------------------------------------------------------------ dialogs */
+.crop-dialog,
+.profile-import-dialog {
   max-height: calc(100vh - 24px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1376,11 +1376,25 @@ input[type='color'] {
   gap: 10px;
 }
 
-.crop-dialog:not([open]) {
+.crop-dialog {
+  width: min(920px, calc(100vw - 24px));
+}
+
+.profile-import-dialog {
+  width: min(480px, calc(100vw - 24px));
+}
+
+.profile-import-dialog > h3 {
+  align-self: start;
+}
+
+.crop-dialog:not([open]),
+.profile-import-dialog:not([open]) {
   display: none;
 }
 
-.crop-dialog::backdrop {
+.crop-dialog::backdrop,
+.profile-import-dialog::backdrop {
   background: rgb(0 0 0 / 0.55);
 }
 
@@ -1527,4 +1541,31 @@ input[type='color'] {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+.profile-import-form,
+.profile-summary {
+  display: grid;
+  gap: 10px;
+  overflow-wrap: anywhere;
+}
+
+.profile-summary {
+  gap: 4px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.profile-summary > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.profile-summary dt {
+  color: var(--muted);
+}
+
+.profile-summary dd {
+  margin: 0;
 }

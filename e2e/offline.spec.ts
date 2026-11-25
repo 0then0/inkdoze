@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, test as base, type Page } from '@playwright/test';
 import { build } from 'vite';
-import { addFiles, bmpPixel, decodeInPage, downloadBytes, enterProfileName, expectColor, makePng, parseBmp, previewAt, quadrants, readZip, saveProfile, setCustomSize, waitPreview, waitReady } from './helpers.ts';
+import { addFiles, bmpPixel, decodeInPage, downloadBytes, enterProfileName, expectColor, exportProfileFile, makePng, openProfileFile, parseBmp, previewAt, quadrants, readZip, saveProfile, setCustomSize, waitPreview, waitReady } from './helpers.ts';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const PREFIX = '/inkdoze/';
@@ -259,6 +259,56 @@ test('applies a saved processing profile to a new batch after reopening offline'
   const midtones = new Set(Array.from({ length: 32 }, (_, x) => first!(x + 10, 74)));
   expect([...midtones].sort((a, b) => a - b)).toEqual([85, 170]);
   expect([second!(4, 20), second!(48, 20), second!(48, 108)]).toEqual([255, 0, 255]);
+});
+
+test('imports a local profile JSON and downloads an image after reopening offline', async ({ page, browser }, info) => {
+  await open(page);
+  const url = page.url();
+  expect(new URL(url).pathname).toBe(PREFIX);
+  await setCustomSize(page, 80, 120);
+  await page.getByRole('radio', { name: 'Stretch', exact: true }).check({ force: true });
+  await page.getByTestId('auto-tone').uncheck();
+  await page.getByTestId('format').selectOption('bmp2');
+  await saveProfile(page, 'Portable offline');
+  const path = info.outputPath('offline-profile.json');
+  await (await exportProfileFile(page)).saveAs(path);
+  await page.close();
+
+  const receiving = await browser.newContext({ acceptDownloads: true });
+  try {
+    const preparation = await receiving.newPage();
+    await open(preparation, url);
+    await offlineToggle(preparation).click();
+    await prepare(preparation);
+    await preparation.close();
+    await receiving.setOffline(true);
+
+    const reopened = await receiving.newPage();
+    await open(reopened, url);
+    expect(await reopened.evaluate(() => navigator.serviceWorker.controller?.scriptURL)).toBe(`${url}sw.js`);
+    await expect(reopened.getByText('No profiles for this model and output mode.')).toBeVisible();
+    await addFiles(reopened, [{ name: 'offline.png', mimeType: 'image/png', buffer: quadrants() }]);
+    await waitReady(reopened, 1);
+    const dialog = await openProfileFile(reopened, path);
+    await expect(dialog.getByText('80 × 120 px', { exact: true })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Save', exact: true }).click();
+    await reopened.getByRole('combobox', { name: 'Processing profiles' }).selectOption({ label: 'Portable offline' });
+    await waitPreview(reopened, '480 × 800');
+    await expect(reopened.getByTestId('format')).toHaveValue('auto');
+    await reopened.getByRole('button', { name: 'Apply profile', exact: true }).click();
+    await waitPreview(reopened, '80 × 120');
+
+    const [download] = await Promise.all([reopened.waitForEvent('download'), reopened.getByTestId('download-one').click()]);
+    expect(download.suggestedFilename()).toBe('offline.bmp');
+    const bytes = await downloadBytes(download);
+    const header = parseBmp(bytes);
+    expect(header).toMatchObject({ width: 80, height: 120, bpp: 2, palette: [0, 85, 170, 255] });
+    const points = [[10, 10], [70, 10], [10, 100], [70, 100]] as const;
+    expect(points.map(([x, y]) => bmpPixel(bytes, header, x, y))).toEqual([85, 170, 0, 255]);
+    expect(await downloadBytes(await exportProfileFile(reopened))).toEqual(await readFile(path));
+  } finally {
+    await receiving.close();
+  }
 });
 
 test('preparing in one tab updates the offline status of an already open tab', async ({ page, context }) => {

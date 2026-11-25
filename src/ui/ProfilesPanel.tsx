@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { useI18n } from '../i18n/index.ts';
 import type { TextKey } from '../i18n/keys.ts';
+import { sanitizeBaseName } from '../io/names.ts';
 import type { OutputSettings } from '../pipeline/types.ts';
-import { loadProfiles, MAX_PROFILE_NAME, MAX_PROFILES, PROFILES_KEY, sameProfileContext, updateProfiles, type ProcessingProfile, type ProfileContext } from './profiles.ts';
+import { ProfileImportDialog } from './ProfileImportDialog.tsx';
+import { encodeProfileFile, loadProfiles, MAX_PROFILE_NAME, MAX_PROFILES, PROFILES_KEY, sameProfileContext, updateProfiles, type ProcessingProfile, type ProfileContext } from './profiles.ts';
+import { saveBlob } from './save.ts';
 
 type Props = ProfileContext & {
   batch: OutputSettings;
@@ -12,15 +15,16 @@ type Props = ProfileContext & {
 type Feedback = { key: TextKey; error?: true };
 
 export function ProfilesPanel(props: Props) {
-  const [profiles, setProfiles] = useState<ProcessingProfile[] | null>(null);
+  const [collection, setCollection] = useState<Awaited<ReturnType<typeof loadProfiles>> | null>(null);
   const [feedback, setFeedback] = useState<(Feedback & { scope: string }) | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
   const scope = `${props.deviceId ?? 'custom'}:${props.outputMode}`;
   const changes = useRef<BroadcastChannel | null>(null);
   const readId = useRef(0);
   const refreshProfiles = useCallback(async () => {
     const id = ++readId.current;
     const list = await loadProfiles();
-    if (id === readId.current) setProfiles(list);
+    if (id === readId.current) setCollection(list);
   }, []);
 
   useEffect(() => {
@@ -38,33 +42,54 @@ export function ProfilesPanel(props: Props) {
     };
   }, [refreshProfiles]);
 
+  const changeProfiles: typeof updateProfiles = async (change) => {
+    const result = await updateProfiles(change);
+    if ('profiles' in result) {
+      changes.current?.postMessage(null);
+      await refreshProfiles();
+    }
+    return result;
+  };
+  const visibleFeedback = feedback && (feedback.scope === scope || feedback.key === 'profiles.storage') ? feedback : null;
+  const readError: Feedback | null = collection && 'error' in collection ? { key: collection.error, error: true } : null;
+
   return (
-    <ProfileControls
-      key={scope}
-      {...props}
-      compatible={profiles?.filter((profile) => sameProfileContext(profile, props))}
-      feedback={feedback && (feedback.scope === scope || feedback.key === 'profiles.storage') ? feedback : null}
-      onFeedback={(next) => setFeedback(next && { ...next, scope })}
-      onChange={async (change) => {
-        const result = await updateProfiles(change);
-        if ('profiles' in result) {
-          changes.current?.postMessage(null);
-          await refreshProfiles();
-        }
-        return result;
-      }}
-    />
+    <>
+      <ProfileControls
+        key={scope}
+        {...props}
+        compatible={collection && 'profiles' in collection ? collection.profiles.filter((profile) => sameProfileContext(profile, props)) : undefined}
+        loading={collection === null}
+        feedback={visibleFeedback ?? readError}
+        onFeedback={(next) => setFeedback(next && { ...next, scope })}
+        onChange={changeProfiles}
+        onImport={() => {
+          setFeedback(null);
+          setImportOpen(true);
+        }}
+      />
+      {importOpen && <ProfileImportDialog
+        onChange={changeProfiles}
+        onClose={() => setImportOpen(false)}
+        onSaved={() => {
+          setImportOpen(false);
+          setFeedback({ scope, key: 'profiles.imported' });
+        }}
+      />}
+    </>
   );
 }
 
 type ControlsProps = Props & {
   compatible: ProcessingProfile[] | undefined;
+  loading: boolean;
   feedback: Feedback | null;
   onFeedback: (feedback: Feedback | null) => void;
   onChange: typeof updateProfiles;
+  onImport: () => void;
 };
 
-function ProfileControls({ batch, onApply, compatible, feedback, onFeedback, onChange, ...context }: ControlsProps) {
+function ProfileControls({ batch, onApply, compatible, loading, feedback, onFeedback, onChange, onImport, ...context }: ControlsProps) {
   const { t } = useI18n();
   const [selectedId, setSelectedId] = useState('');
   const [editor, setEditor] = useState<'save' | 'rename' | null>(null);
@@ -109,8 +134,19 @@ function ProfileControls({ batch, onApply, compatible, feedback, onFeedback, onC
     requestAnimationFrame(() => trigger.current?.focus());
   };
 
+  const exportProfile = () => {
+    if (!selected) return;
+    onFeedback(null);
+    try {
+      const json = new Blob([encodeProfileFile(selected)], { type: 'application/json' });
+      saveBlob(json, `${sanitizeBaseName(`inkdoze-profile-${selected.name}`)}.json`);
+    } catch {
+      onFeedback({ key: 'profiles.exportFailed', error: true });
+    }
+  };
+
   return (
-    <section class="profiles" aria-labelledby="profiles-title" aria-busy={pending || compatible === undefined}>
+    <section class="profiles" aria-labelledby="profiles-title" aria-busy={pending || loading}>
       <h3 id="profiles-title">{t('profiles.title')}</h3>
       {compatible?.length ? (
         <>
@@ -143,6 +179,13 @@ function ProfileControls({ batch, onApply, compatible, feedback, onFeedback, onC
       <button type="button" class="link-button" ref={saveButton} disabled={pending} aria-expanded={editor === 'save'} onClick={() => editName('save')}>
         {t('profiles.saveBatch')}
       </button>
+      <div class="profile-actions">
+        <button type="button" class="button small" disabled={pending} aria-haspopup="dialog" onClick={(e) => {
+          e.currentTarget.focus();
+          onImport();
+        }}>{t('profiles.import')}</button>
+        <button type="button" class="button small" disabled={!selected || pending} onClick={exportProfile}>{t('profiles.export')}</button>
+      </div>
       {editor && (
         <form class="field" noValidate onSubmit={(e) => {
           e.preventDefault();

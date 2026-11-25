@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
-import { addFiles, quadrants, waitPreview, waitReady } from './helpers.ts';
+import { createTranslator } from '../src/i18n/index.ts';
+import { addFiles, downloadBytes, quadrants, waitPreview, waitReady } from './helpers.ts';
 
 const LOCALES = ['en', 'ru', 'es', 'de', 'fr', 'ja', 'pt-BR'] as const;
 const VIEWPORTS = [
@@ -40,6 +41,7 @@ async function layoutProblems(page: Page): Promise<string[]> {
       '.device-name',
       '.device-meta',
       '.facts dd',
+      '.profile-summary dd',
       '.field-label',
       '.dims label',
       '.hint',
@@ -114,6 +116,20 @@ for (const vp of VIEWPORTS) {
         await expect(page.locator('.profiles option:checked')).toHaveText(longName);
         expect(await layoutProblems(page), 'saved profile').toEqual([]);
         await info.attach(`${locale}-${vp.name}.png`, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+
+        const { t } = createTranslator(locale);
+        const [exported] = await Promise.all([
+          page.waitForEvent('download'), page.getByRole('button', { name: t('profiles.export'), exact: true }).click(),
+        ]);
+        const importButton = page.getByRole('button', { name: t('profiles.import'), exact: true });
+        await importButton.press('Enter');
+        const dialog = page.getByRole('dialog', { name: t('profiles.import') });
+        await expect(dialog.getByRole('button', { name: t('profiles.chooseFile') })).toBeFocused();
+        await dialog.locator('input[type="file"]').setInputFiles({ name: 'profile.json', mimeType: 'application/json', buffer: await downloadBytes(exported) });
+        await expect(dialog.getByRole('alert')).toContainText(longName);
+        expect(await layoutProblems(page), 'profile import preview').toEqual([]);
+        await page.keyboard.press('Escape');
+        await expect(importButton).toBeFocused();
 
         // Crop dialog.
         await page.locator('.adjust-buttons .button').first().click();

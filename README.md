@@ -19,7 +19,7 @@ InkDoze turns images into sleep screens for e-readers. It sizes and adjusts each
 2. Choose your e-reader by model or resolution, or select **Custom size**.
 3. Download an image or a ZIP of the batch. See **How to install** for the selected model's instructions.
 
-You can adjust an entire batch or a single image, reuse processing profiles, and prepare InkDoze to reopen offline. Compatible devices also get a Kindle cover EPUB or a CrossPoint transparent overlay option. [User guide](docs/user-guide.md)
+You can adjust an entire batch or a single image, save and transfer processing profiles, and prepare InkDoze to reopen offline. Compatible devices also get a Kindle cover EPUB or a CrossPoint transparent overlay option. [User guide](docs/user-guide.md)
 
 ## Documentation
 
