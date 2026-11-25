@@ -99,9 +99,15 @@ for (const vp of VIEWPORTS) {
         ]);
         await waitReady(page, 2);
         await waitPreview(page, '480 × 800');
-        await page.locator('input[name="scope"][value="one"]').check({ force: true });
-        await page.locator('input[name="target"][value="custom"]').check({ force: true });
-        await page.locator('input[name="levels"][value="4"]').check({ force: true });
+        for (const selector of [
+          'input[name="scope"][value="one"]',
+          'input[name="target"][value="custom"]',
+          'input[name="levels"][value="4"]',
+        ]) {
+          const choice = page.locator(selector);
+          await choice.press('Space');
+          await expect(choice).toBeChecked();
+        }
         await page.locator('[data-device="kindle-paperwhite-6"]').click();
         await page.locator('input[name="target"][value="device"]').check();
         expect(await layoutProblems(page), 'working state').toEqual([]);
