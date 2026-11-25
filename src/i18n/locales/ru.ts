@@ -143,7 +143,6 @@ export const ru: Messages = {
   'limit.crosspointOverlay.priority': 'Файлы {bmp} и {png} в корне SD-карты имеют приоритет над папкой. CrossPoint сначала пробует загрузить BMP.',
   'limit.crosspoint.bmpOnly': 'Для своих экранов сна читается только несжатый BMP размером до {max} пикселей.',
   'limit.crosspoint.firstSleep': 'Первое засыпание с новым изображением длится дольше: прошивка его конвертирует.',
-  'limit.crosspoint.noPxc': 'Экраны сна в формате PXC есть только в непринятом pull request, ни в одном релизе CrossPoint их нет.',
   'limit.xteink.app': 'Обои также можно отправить через Cloud Sync в приложении Xteink.',
   'limit.xteinkCommunity.unverified': 'Шаги взяты из руководств сообщества, а не от Xteink. Форматы, кроме BMP, не подтверждены.',
   'limit.formatUnspecified': 'Производитель не указывает форматы файлов. Предлагается PNG, потому что он без потерь.',

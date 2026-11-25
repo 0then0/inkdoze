@@ -3,7 +3,7 @@ import { BRANDS, type Device, type InstallMethod, type OutputFormat } from './ty
 const ID_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const FORMATS: readonly OutputFormat[] = ['png', 'jpeg', 'bmp24', 'bmp8', 'bmp4', 'bmp2', 'bmp1', 'pxc'];
-/** Keep in sync with the decoded-pixel limit in src/io/limits.ts. */
+/** Matches the maximum output side in src/io/limits.ts. */
 const MAX_SIDE = 8192;
 
 export interface CatalogIssue {

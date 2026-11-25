@@ -40,7 +40,7 @@ export const INSTALL_METHODS: Record<InstallMethodId, InstallMethod> = {
     recommendedFormat: 'bmp24',
     fileName: 'sleep',
     steps: [
-      { key: 'install.crosspoint.mode', params: { menu: 'Settings › Sleep Screen › Custom' } },
+      { key: 'install.crosspoint.mode', params: { menu: 'Settings › Display › Sleep Screen › Custom' } },
       { key: 'install.crosspoint.single', params: { file: 'sleep.bmp' } },
       { key: 'install.crosspoint.multiple', params: { dir: '/.sleep', legacy: '/sleep' } },
       { key: 'install.crosspoint.coverMode', params: { menu: 'Sleep Screen Cover Mode' } },
@@ -48,9 +48,8 @@ export const INSTALL_METHODS: Record<InstallMethodId, InstallMethod> = {
     limitations: [
       { key: 'limit.crosspoint.bmpOnly', params: { max: '2048 × 3072' } },
       { key: 'limit.crosspoint.firstSleep' },
-      { key: 'limit.crosspoint.noPxc' },
     ],
-    sources: [SRC.crosspointGuide, SRC.crosspointSleep, SRC.crosspointBitmap, SRC.crosspointRelease, SRC.crosspointPxcPr],
+    sources: [SRC.crosspointGuide, SRC.crosspointSleep, SRC.crosspointBitmap, SRC.crosspointRelease],
     verified: VERIFIED,
   },
   [CROSSPOINT_OVERLAY_METHOD]: {

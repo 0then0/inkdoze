@@ -6,9 +6,8 @@ import { levelIndex } from '../pipeline/tone.ts';
  * ceil(width / 4) bytes with no further padding. Value 0 is black and 3 is white,
  * matching CrossPoint's native gray levels 0/85/170/255.
  *
- * Stock CrossPoint 2.0.0 only uses this layout as an internal cache. Loading .pxc
- * files as sleep images exists in the unmerged PR #1614, so the catalog does not
- * offer PXC for any released firmware.
+ * CrossPoint 2.0.0 uses this layout for its internal image cache. The format
+ * registry keeps PXC out of the default export menu.
  */
 export function pxcRowBytes(width: number): number {
   return Math.ceil(width / 4);

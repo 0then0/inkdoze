@@ -30,7 +30,7 @@ const LOCALE_KEY = 'inkdoze.locale';
 const DEVICE_KEY = 'inkdoze.device';
 const CUSTOM_DEVICE = 'custom';
 
-/** Start with the e-reader chosen on the previous visit, so returning users only add images and download. */
+/** Restore the last selected e-reader or Custom size from browser storage. */
 function initState(): AppState {
   try {
     const saved = localStorage.getItem(DEVICE_KEY);

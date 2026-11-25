@@ -1,6 +1,6 @@
 import type { Source } from './types.ts';
 
-/** Commits and tags pinned when the catalog was last verified. */
+/** Release tags and commits for the cited firmware and tools. */
 const CROSSPOINT_TAG = '2.0.0';
 const CROSSPOINT_REPO = 'https://github.com/crosspoint-reader/crosspoint-reader';
 const FREEINK_COMMIT = 'c996d1b90d5725519f3e479eed99c592c5b081b7';
@@ -10,8 +10,8 @@ const KOREADER_COMMIT = '01ccbd790d6269301ad523e75c45f62d022a6d7b';
 export const SRC = {
   crosspointGuide: {
     kind: 'firmware',
-    title: 'CrossPoint User Guide, 3.7 Sleep Screen',
-    url: `${CROSSPOINT_REPO}/blob/develop/USER_GUIDE.md#37-sleep-screen`,
+    title: `CrossPoint ${CROSSPOINT_TAG} User Guide: sleep screen`,
+    url: `${CROSSPOINT_REPO}/blob/${CROSSPOINT_TAG}/USER_GUIDE.md#37-sleep-screen`,
   },
   crosspointOverlayGuide: {
     kind: 'firmware',
@@ -45,11 +45,6 @@ export const SRC = {
     title: `CrossPoint ${CROSSPOINT_TAG} release assets`,
     url: `${CROSSPOINT_REPO}/releases/tag/${CROSSPOINT_TAG}`,
     note: 'Builds for x3-x4, x4c, x4pro and picco.',
-  },
-  crosspointPxcPr: {
-    kind: 'firmware',
-    title: 'CrossPoint PR #1614: PXC image format support (open, unmerged)',
-    url: `${CROSSPOINT_REPO}/pull/1614`,
   },
   freeinkBoard: {
     kind: 'firmware',

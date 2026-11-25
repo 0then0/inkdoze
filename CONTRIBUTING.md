@@ -1,106 +1,25 @@
 # Contributing to InkDoze
 
-Thanks for helping. Bug reports, catalog corrections, translations and code are all welcome. By participating you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Bug reports, device corrections, translations, documentation and code are welcome. The project's conduct standards apply to all contributions. [Code of Conduct](CODE_OF_CONDUCT.md)
 
-## Setup
+## Report a problem
 
-```bash
-npm ci
-```
+For an app issue, include the steps to reproduce it, the expected result, the browser version and the selected reader. If a specific file triggers the problem, describe its format and dimensions. A sample you can share publicly is useful. [Open a bug report](https://github.com/0then0/inkdoze/issues/new?template=bug_report.yml)
 
-```bash
-npm run dev
-```
-
-Before opening a pull request, run:
-
-```bash
-npm run check
-```
-
-```bash
-npm run test:e2e
-```
+Report vulnerabilities privately. [Security policy](SECURITY.md)
 
 ## Adding or correcting an e-reader
 
-Device data lives in [`src/catalog/devices.ts`](src/catalog/devices.ts), install methods in [`src/catalog/install.ts`](src/catalog/install.ts) and reusable source links in [`src/catalog/sources.ts`](src/catalog/sources.ts). `npm run catalog:check` validates both and runs in CI.
+Include the brand, exact model, generation or regional variant, native portrait resolution and the source for each claim. For an installation method, include the firmware version and a source that covers the device. [Catalog contribution guide](docs/device-catalog.md#add-or-correct-an-e-reader) · [Open a catalog issue](https://github.com/0then0/inkdoze/issues/new?template=device.yml)
 
-### 1. Check the resolution
+## Code and documentation
 
-The resolution is the native panel grid in **portrait** orientation (width < height). A matching diagonal, ppi or marketing name does not prove a matching resolution: check every generation and regional variant on its own.
+Set up a checkout with the instructions in the development guide. Run `npm run check` before opening a pull request. Run the relevant Playwright tests for changes to the UI, file formats or translations. In the pull request, describe what changed and list the checks you ran. [Local development and tests](docs/development.md)
 
-Acceptable sources, best first:
-
-| Kind | Examples | Notes |
-| --- | --- | --- |
-| `manufacturer` | Spec page, datasheet, manual, help center | Must state the pixel grid. A page that only gives ppi is `secondary` for the resolution. |
-| `firmware` | Stock or open firmware source, SDK panel definitions | Link to a tag or commit, not a moving branch. |
-| `community` | KOReader, Plato, Kindle Comic Converter, MobileRead Wiki device pages | Prefer data backed by device screenshots or framebuffer dumps. Check wiki pages against each other: some are copied between models. |
-| `secondary` | Retailers, reviews, comparison sites | Allowed only when nothing better exists; the UI shows a warning. Use two independent sources. |
-
-For colour panels (Kaleido, Gallery), record the full black-and-white grid. If sources disagree, use the one closest to the hardware and add a `note` explaining the difference (see `note.kindle.marketingResolution`).
-
-### 2. Add the record
-
-```ts
-{
-  id: 'kobo-libra-colour',      // stable, lowercase kebab-case, never renamed
-  model: 'Libra Colour',
-  generation: 'Libra Colour (2024)', // or 'Nth generation (YYYY)' with `ordinal`
-  ordinal: undefined,           // set for numbered generations; the UI translates it
-  year: 2024,
-  w: 1264,
-  h: 1680,
-  color: true,
-  aliases: ['libra color', 'n428'], // model numbers, codenames, common short names
-  sources: [koboProduct('kobo-libra-colour', 'Libra Colour')],
-  install: ['kobo-cover', 'kobo-screensaver-folder', 'koreader-kobo'],
-}
-```
-
-- IDs and aliases must be unique across the catalog.
-- `generation` must not contain English words other than names; numbered generations use `ordinal` so every language can render them.
-- `verified` is set by the brand helper; update `VERIFIED` in the file when you recheck a group of records.
-
-ONYX BOOX models for the Russian market live in [`src/catalog/devices-boox-ru.ts`](src/catalog/devices-boox-ru.ts) and cite the product's specification tab on onyx-boox.ru. Brands with only a few, mostly discontinued models live in [`src/catalog/devices-other.ts`](src/catalog/devices-other.ts). A new brand also needs an entry in `BRANDS` ([`src/catalog/types.ts`](src/catalog/types.ts)) and a reach value in [`src/catalog/popularity.ts`](src/catalog/popularity.ts).
-
-Leave a model out rather than guessing: skip it when the only source gives an implausible grid (for example 1024 × 768 for a 6-inch 212 ppi panel), contradicts itself, or has no release year.
-
-### 3. Link an install method
-
-An install method describes how a specific firmware or app shows a custom image. Sharing a screen size does **not** mean sharing a method, so add a method to a device only when a source covers that model or its whole line.
-
-Statuses:
-
-- `custom-image`: the firmware or app can show a user-supplied image.
-- `cover-only`: only the current book cover can be shown.
-- `third-party`: needs a specific third-party firmware, jailbreak, root/SSH access or app.
-- `size-only`: no documented method. Use this by leaving `install: []`.
-
-Set `communityDocumented: true` when the only sources are community guides, forums or blogs rather than the vendor or the firmware project.
-
-A method needs:
-
-- `sources` that state the menu path, folder or file name, and formats. Prefer official docs or firmware source code; for firmware, link a release tag.
-- `formats`: only formats a source confirms. Leave it empty when the vendor does not specify any, and set `recommendedFormat` (usually `png`) together with the `limit.formatUnspecified` limitation.
-- `steps` and `limitations` as message keys. Menu labels, paths and file names go in `params` so they are shown verbatim and never translated.
-- A `method.<id>` message key with the localized method name.
-
-For CrossPoint, check the BMP reader (`lib/GfxRenderer/Bitmap.cpp`) and the sleep screen code (`src/activities/boot_sleep/SleepActivity.cpp`) at the release tag, not only the user guide. Stock firmware and CrossPoint are separate methods even on the same device. PXC stays hidden until a CrossPoint release reads PXC sleep images.
-
-### 4. Add translations
-
-Every new message key must exist in all files in [`src/i18n/locales`](src/i18n/locales). The type checker rejects missing keys, and unit tests check placeholders and plural forms. Keep placeholders such as `{menu}` unchanged.
+Keep image processing local. The page and image workers handle user files. Network access for offline preparation belongs to the service worker and is limited to static app files. Test binary format changes with an independent reader. Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
 
 ## Translations
 
-Translations should read like native UI text, not word-for-word English. Keep product and brand names in Latin script. After editing, run `npm run test:e2e`: the locale tests fail if any text is clipped or overflows at desktop, tablet or phone width.
+Add each new message key to every locale. Preserve placeholders such as `{menu}` and keep literal firmware menu names, folder names and file names intact. Write natural UI text in the target language. [Locale files](src/i18n/locales)
 
-## Code
-
-- TypeScript with `strict` settings, Preact for the UI, no runtime dependencies beyond Preact.
-- Type checking uses TypeScript 7 (the native compiler), installed as `@typescript/native`. `typescript` stays on 6.x only because typescript-eslint still needs the JavaScript compiler API, which TypeScript 7 does not ship. Run `npm run typecheck` rather than a bare `tsc`: both packages provide a `tsc` binary.
-- The app must work offline after load. ESLint forbids `fetch`, `XMLHttpRequest`, `WebSocket` and `EventSource` in page and image worker code. Offline preparation uses the scoped Service Worker to download the static files listed by the production build.
-- Binary formats need tests that read the output with an independent decoder.
-- Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+Run `npm test` to check message keys, placeholders and plural forms, then run `npm run test:e2e -- e2e/locales.spec.ts` to check desktop, tablet and phone layouts.

@@ -182,8 +182,7 @@ const kindle = brand('Kindle', [
 ]);
 
 // ---------------------------------------------------------------------------
-// Kobo: current models from kobo.com technical specs; earlier generations from
-// KCC device profiles.
+// Kobo: manufacturer specifications and KCC device profiles for earlier models.
 // ---------------------------------------------------------------------------
 const KOBO: InstallMethodId[] = ['kobo-cover', 'kobo-screensaver-folder', 'koreader-kobo'];
 const kobo = brand('Kobo', [
@@ -246,8 +245,7 @@ const pocketbook = brand('PocketBook', [
 ]);
 
 // ---------------------------------------------------------------------------
-// tolino: current models from mytolino.com; previous generations from secondary
-// sources only.
+// tolino: manufacturer specifications where available and secondary sources for earlier models.
 // ---------------------------------------------------------------------------
 const tolino = brand('tolino', [
   { id: 'tolino-shine-5', model: 'shine', generation: '5th generation (2024)', ordinal: 5, year: 2024, w: 1072, h: 1448, aliases: ['shine 5'], sources: [tolinoProduct('tolino-shine-5-generation', 'shine 5th generation')], install: ['tolino-cover'] },
@@ -334,8 +332,7 @@ const meebook = brand('Meebook', [
 ]);
 
 // ---------------------------------------------------------------------------
-// Niche phone-sized readers from the reference catalog, kept with independent
-// secondary confirmation of the pixel grid.
+// Phone-sized readers with independently sourced resolutions.
 // ---------------------------------------------------------------------------
 const durobo = brand('DuRoBo', [
   { id: 'durobo-krono', model: 'Krono', generation: 'Krono (6.13")', year: 2025, w: 824, h: 1648, sources: [secondary('Notebookcheck: Durobo Krono', 'https://www.notebookcheck.net/Durobo-Krono-A-unique-Android-powered-e-reader-that-is-everything-but-a-smartphone.1068645.0.html'), secondary('GameRevolution: DuRoBo Krono review', 'https://www.gamerevolution.com/review/984877-durobo-krono-review-epaper-ereader-reading')], install: [] },

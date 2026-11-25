@@ -9,7 +9,7 @@ export interface FormatInfo {
   maxLevels: Levels;
   /** Grayscale-only formats force the grayscale pipeline. */
   grayscaleOnly: boolean;
-  /** Offered in the format menu. PXC stays hidden until a released firmware reads it. */
+  /** Offered by default in the format menu. A documented install method can add formats. */
   selectable: boolean;
 }
 

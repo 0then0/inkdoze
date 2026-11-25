@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please read the catalog section of [CONTRIBUTING.md](https://github.com/0then0/inkdoze/blob/main/CONTRIBUTING.md). A matching screen size or name does not prove a matching resolution or install method, so every claim needs a source.
+        Include sources for the exact model and generation. See the [catalog contribution guide](https://github.com/0then0/inkdoze/blob/main/docs/device-catalog.md#add-or-correct-an-e-reader).
   - type: input
     id: model
     attributes:

@@ -143,7 +143,6 @@ export const fr: Messages = {
   'limit.crosspointOverlay.priority': 'Les fichiers {bmp} et {png} à la racine de la carte SD sont prioritaires sur le dossier. CrossPoint essaie de charger le BMP en premier.',
   'limit.crosspoint.bmpOnly': 'Seuls les BMP non compressés jusqu’à {max} pixels sont lus pour les écrans de veille personnalisés.',
   'limit.crosspoint.firstSleep': 'La première mise en veille avec une nouvelle image est plus longue, le temps que le firmware la convertisse.',
-  'limit.crosspoint.noPxc': 'Les écrans de veille PXC n’existent que dans une pull request non fusionnée, dans aucune version de CrossPoint.',
   'limit.xteink.app': 'L’appli Xteink peut aussi envoyer des fonds d’écran via Cloud Sync.',
   'limit.xteinkCommunity.unverified': 'Ces étapes viennent de guides communautaires, pas de Xteink. Seul le BMP est confirmé.',
   'limit.formatUnspecified': 'Le fabricant n’indique pas de formats. Le PNG est proposé car il est sans perte.',

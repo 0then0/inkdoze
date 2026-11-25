@@ -143,7 +143,6 @@ export const ja: Messages = {
   'limit.crosspointOverlay.priority': 'SD カードのルートにある {bmp} と {png} はフォルダーより優先されます。CrossPoint は最初に BMP の読み込みを試みます。',
   'limit.crosspoint.bmpOnly': '独自のスリープ画像として読み込めるのは、{max} ピクセルまでの非圧縮 BMP のみです。',
   'limit.crosspoint.firstSleep': '新しい画像で初めてスリープするときは、ファームウェアの変換処理のため時間がかかります。',
-  'limit.crosspoint.noPxc': 'PXC 形式のスリープ画像は未マージのプルリクエストにのみ存在し、CrossPoint のリリースには含まれていません。',
   'limit.xteink.app': 'Xteink アプリから Cloud Sync で壁紙を送ることもできます。',
   'limit.xteinkCommunity.unverified': '手順は Xteink ではなくコミュニティのガイドに基づきます。確認済みの形式は BMP のみです。',
   'limit.formatUnspecified': 'メーカーはファイル形式を明記していません。劣化のない PNG を推奨しています。',

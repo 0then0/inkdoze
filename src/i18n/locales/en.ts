@@ -147,7 +147,6 @@ export const en = {
   'limit.crosspointOverlay.priority': 'In the root of the SD card, {bmp} and {png} take priority over the folder. CrossPoint tries the BMP first.',
   'limit.crosspoint.bmpOnly': 'Only uncompressed BMP is read for custom sleep images, up to {max} pixels.',
   'limit.crosspoint.firstSleep': 'The first sleep with a new image takes longer while the firmware converts it.',
-  'limit.crosspoint.noPxc': 'PXC sleep images exist only in an unmerged pull request, not in any CrossPoint release.',
   'limit.xteink.app': 'The Xteink app can also send wallpapers over Cloud Sync.',
   'limit.xteinkCommunity.unverified': 'Steps come from community guides, not from Xteink. Formats other than BMP are not confirmed.',
   'limit.formatUnspecified': 'The manufacturer does not list file formats. PNG is suggested because it is lossless.',

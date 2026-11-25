@@ -143,7 +143,6 @@ export const de: Messages = {
   'limit.crosspointOverlay.priority': 'Die Dateien {bmp} und {png} im Stammverzeichnis der SD-Karte haben Vorrang vor dem Ordner. CrossPoint versucht zuerst, die BMP-Datei zu laden.',
   'limit.crosspoint.bmpOnly': 'Für eigene Ruhebilder wird nur unkomprimiertes BMP bis {max} Pixel gelesen.',
   'limit.crosspoint.firstSleep': 'Der erste Ruhezustand mit einem neuen Bild dauert länger, weil die Firmware es umwandelt.',
-  'limit.crosspoint.noPxc': 'PXC-Ruhebilder gibt es nur in einem nicht gemergten Pull Request, in keinem CrossPoint-Release.',
   'limit.xteink.app': 'Die Xteink-App kann Hintergrundbilder auch per Cloud Sync senden.',
   'limit.xteinkCommunity.unverified': 'Die Schritte stammen aus Community-Anleitungen, nicht von Xteink. Nur BMP ist bestätigt.',
   'limit.formatUnspecified': 'Der Hersteller nennt keine Dateiformate. PNG wird vorgeschlagen, weil es verlustfrei ist.',

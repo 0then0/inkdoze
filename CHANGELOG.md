@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed
+
+- Shorten the README and organise the user guide, device catalog, image processing reference and development instructions under `docs/`.
+- Include Preact's full MIT notice in the production build.
+
 ## [0.6.1] - 2026-11-24
 
 ### Fixed

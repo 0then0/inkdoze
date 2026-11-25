@@ -1,6 +1,5 @@
 /**
- * Minimal ZIP writer (STORE, no compression). PNG and JPEG are already compressed,
- * and storing keeps the writer short and easy to verify.
+ * ZIP writer using uncompressed STORE entries. PNG and JPEG payloads are already compressed.
  */
 
 const CRC_TABLE = (() => {

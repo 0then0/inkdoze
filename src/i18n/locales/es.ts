@@ -143,7 +143,6 @@ export const es: Messages = {
   'limit.crosspointOverlay.priority': 'Los archivos {bmp} y {png} de la raíz de la tarjeta SD tienen prioridad sobre la carpeta. CrossPoint intenta abrir primero el BMP.',
   'limit.crosspoint.bmpOnly': 'Para imágenes de reposo propias solo se lee BMP sin compresión, de hasta {max} píxeles.',
   'limit.crosspoint.firstSleep': 'El primer reposo con una imagen nueva tarda más mientras el firmware la convierte.',
-  'limit.crosspoint.noPxc': 'Las imágenes de reposo en PXC solo existen en un pull request sin fusionar, no en ninguna versión de CrossPoint.',
   'limit.xteink.app': 'La app de Xteink también puede enviar fondos mediante Cloud Sync.',
   'limit.xteinkCommunity.unverified': 'Los pasos vienen de guías de la comunidad, no de Xteink. Solo BMP está confirmado.',
   'limit.formatUnspecified': 'El fabricante no indica formatos de archivo. Se sugiere PNG porque no pierde calidad.',

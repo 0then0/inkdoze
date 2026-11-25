@@ -56,7 +56,7 @@ export function autoToneCurve(rgba: Uint8ClampedArray, width: number, region: Re
   const y0 = Math.max(0, Math.floor(region.y));
   const x1 = Math.min(width, Math.ceil(region.x + region.w));
   const y1 = Math.min(rgba.length / 4 / width, Math.ceil(region.y + region.h));
-  // Sample at most ~250k pixels; plenty for a histogram.
+  // Increase the histogram sampling stride for large regions.
   const step = Math.max(1, Math.floor(Math.sqrt(((x1 - x0) * (y1 - y0)) / 250_000)));
   let total = 0;
   for (let y = y0; y < y1; y += step) {

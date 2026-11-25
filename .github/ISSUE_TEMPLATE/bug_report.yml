@@ -17,12 +17,12 @@ body:
   - type: input
     id: browser
     attributes:
-      label: Browser and OS
+      label: Browser version and OS
       placeholder: Firefox 140 on Windows 11
     validations:
       required: true
   - type: textarea
     id: file
     attributes:
-      label: Input image
-      description: Size and format of the image. Attach it only if you are comfortable sharing it publicly.
+      label: Input file, if relevant
+      description: Include the file format and, for an image, its dimensions. Attach only files you can share publicly.
